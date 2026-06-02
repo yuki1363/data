@@ -399,4 +399,655 @@ Text: Substitute(varAirCompResult, ";", " / ")
 - 異常値検知時の **アラート自動送信**（Teams / メール）
 - 写真添付機能（PowerApps Camera コントロール → SharePoint ドキュメントライブラリ）
 ---
-*最終更新: 2026-06-02 (rev.3 — 号機3項目を複数選択対応・MultiChoice/ToggleChip実装追加) | 担当: 保全技術課*
+---
+## 全画面 コントロール配置コード（PowerApps Studio）
+### 共通設定値
+```
+アプリサイズ: 幅 390 × 高さ 844（電話レイアウト）
+ヘッダー色: #1A3A6E
+完了ボタン色: #1A7E4A
+標準フォントサイズ: 14pt
+ラベル色: RGBA(80,80,80,1)
+入力枠 BorderColor: RGBA(180,180,180,1)
+画面余白（X）: 16
+コントロール幅: Parent.Width - 32
+```
+---
+### scrHome — ホーム画面
+#### lbl_Date（日付表示）
+| プロパティ | 値 |
+|---|---|
+| Text | `Text(Today(), "yyyy年mm月dd日（aaa）")` |
+| X | 16 |
+| Y | 16 |
+| Width | `Parent.Width - 32` |
+| Height | 28 |
+| Size | 13 |
+| Color | `RGBA(80,80,80,1)` |
+#### lbl_Title（タイトル）
+| プロパティ | 値 |
+|---|---|
+| Text | `"ユーティリティ日報"` |
+| X | 16 |
+| Y | 44 |
+| Width | `Parent.Width - 32` |
+| Height | 40 |
+| Size | 22 |
+| FontWeight | `FontWeight.Bold` |
+| Color | `RGBA(26,58,110,1)` |
+#### lbl_TodayStatus（本日入力済みバッジ）
+| プロパティ | 値 |
+|---|---|
+| Text | `If(varTodaySubmitted, "✅ 本日入力済み", "● 本日未入力")` |
+| X | 16 |
+| Y | 90 |
+| Width | 160 |
+| Height | 28 |
+| Size | 12 |
+| Fill | `If(varTodaySubmitted, RGBA(232,248,238,1), RGBA(255,235,235,1))` |
+| Color | `If(varTodaySubmitted, RGBA(26,126,74,1), RGBA(180,30,30,1))` |
+| BorderColor | `If(varTodaySubmitted, ColorValue("#1A7E4A"), ColorValue("#cc3333"))` |
+| BorderThickness | 1 |
+| RadiusTopLeft / TopRight / BottomLeft / BottomRight | 12 |
+| PaddingLeft | 10 |
+| Align | `Align.Left` |
+#### btn_NewEntry（本日分を入力するボタン）
+| プロパティ | 値 |
+|---|---|
+| Text | `"📋 本日分を入力する"` |
+| X | 16 |
+| Y | 150 |
+| Width | `Parent.Width - 32` |
+| Height | 60 |
+| Fill | `ColorValue("#1A3A6E")` |
+| Color | White |
+| RadiusTopLeft / TopRight / BottomLeft / BottomRight | 10 |
+| FontWeight | `FontWeight.Semibold` |
+| Size | 16 |
+| OnSelect | `Navigate(scrInput1, ScreenTransition.Fade)` |
+#### btn_History（履歴ボタン）
+| プロパティ | 値 |
+|---|---|
+| Text | `"📂 過去データを見る"` |
+| X | 16 |
+| Y | 224 |
+| Width | `Parent.Width - 32` |
+| Height | 56 |
+| Fill | White |
+| Color | `RGBA(50,50,50,1)` |
+| BorderColor | `RGBA(180,180,180,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft / TopRight / BottomLeft / BottomRight | 10 |
+| Size | 15 |
+| OnSelect | `Navigate(scrHistory, ScreenTransition.Fade)` |
+#### OnVisible（ホーム画面）
+```powerfx
+Set(varTodaySubmitted,
+    CountRows(
+        Filter(UtilityDailyReport,
+            Text(DateValue(Text('点検日時',"yyyy/mm/dd")),"yyyy/mm/dd") = Text(Today(),"yyyy/mm/dd")
+        )
+    ) > 0
+)
+```
+---
+### scrInput1 — 入力①（灯油・ボイラー・運転時間）
+#### rect_Header（ヘッダー背景）
+| プロパティ | 値 |
+|---|---|
+| X | 0 |
+| Y | 0 |
+| Width | `Parent.Width` |
+| Height | 50 |
+| Fill | `ColorValue("#1A3A6E")` |
+#### lbl_HeaderTitle
+| プロパティ | 値 |
+|---|---|
+| Text | `"灯油・ボイラー・運転時間"` |
+| X | 16 |
+| Y | 0 |
+| Width | `Parent.Width - 80` |
+| Height | 50 |
+| Color | White |
+| Size | 14 |
+| FontWeight | `FontWeight.Semibold` |
+#### lbl_Step
+| プロパティ | 値 |
+|---|---|
+| Text | `"1 / 5"` |
+| X | `Parent.Width - 60` |
+| Y | 0 |
+| Width | 50 |
+| Height | 50 |
+| Color | `RGBA(255,255,255,0.7,1)` |
+| Size | 12 |
+| Align | `Align.Right` |
+#### rect_Progress（プログレスバー）
+| プロパティ | 値 |
+|---|---|
+| X | 0 |
+| Y | 50 |
+| Width | `Parent.Width * 0.2` |
+| Height | 4 |
+| Fill | `ColorValue("#2196F3")` |
+#### lbl_Section1（セクションラベル — 灯油系統）
+| プロパティ | 値 |
+|---|---|
+| Text | `"■ 灯油系統"` |
+| X | 16 |
+| Y | 68 |
+| Width | `Parent.Width - 32` |
+| Height | 24 |
+| Color | `ColorValue("#1A3A6E")` |
+| Size | 12 |
+| FontWeight | `FontWeight.Bold` |
+#### lbl_SubTankLevel（ラベル）
+| プロパティ | 値 |
+|---|---|
+| Text | `"灯油サブタンクレベル（液面）"` |
+| X | 16 |
+| Y | 96 |
+| Height | 24 |
+| Size | 12 |
+| Color | `RGBA(80,80,80,1)` |
+#### btn_SubTank_High / Mid / Low（上・中・下チップ）
+| プロパティ | 上 | 中 | 下 |
+|---|---|---|---|
+| Text | `"上"` | `"中"` | `"下"` |
+| X | 16 | 100 | 184 |
+| Y | 124 | 124 | 124 |
+| Width | 76 | 76 | 76 |
+| Height | 40 | 40 | 40 |
+| Fill | `If(varSubTank="上", ColorValue("#1A3A6E"), White)` | `If(varSubTank="中", ColorValue("#1A3A6E"), White)` | `If(varSubTank="下", ColorValue("#1A3A6E"), White)` |
+| Color | `If(varSubTank="上", White, RGBA(0,0,0,0.7,1))` | 同左 | 同左 |
+| BorderColor | `ColorValue("#1A3A6E")` | 同左 | 同左 |
+| BorderThickness | 1 | 1 | 1 |
+| RadiusTopLeft 他 | 6 | 6 | 6 |
+| OnSelect | `Set(varSubTank,"上")` | `Set(varSubTank,"中")` | `Set(varSubTank,"下")` |
+> ※ サブタンクレベルは単一選択なので変数1つ（varSubTank）で管理
+#### txt_HWBoilerKerosene（温水ボイラー灯油メーター）
+| プロパティ | 値 |
+|---|---|
+| HintText | `"温水ボイラー灯油メーター（L）"` |
+| X | 16 |
+| Y | 178 |
+| Width | `Parent.Width - 32` |
+| Height | 44 |
+| KeyboardType | `KeyboardType.DecimalNumber` |
+| Format | `TextFormat.Number` |
+| BorderColor | `RGBA(180,180,180,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 6 |
+#### lbl_Section2（運転時間）
+| プロパティ | 値 |
+|---|---|
+| Text | `"■ 運転時間"` |
+| X | 16 |
+| Y | 238 |
+| Height | 24 |
+| Color | `ColorValue("#1A3A6E")` |
+| Size | 12 |
+| FontWeight | `FontWeight.Bold` |
+#### txt_StartTime / txt_EndTime（横並び）
+| プロパティ | 開始時刻 | 終了時刻 |
+|---|---|---|
+| HintText | `"開始 HH:MM"` | `"終了 HH:MM"` |
+| X | 16 | `Parent.Width/2 + 4` |
+| Y | 268 | 268 |
+| Width | `Parent.Width/2 - 20` | `Parent.Width/2 - 20` |
+| Height | 44 | 44 |
+| MaxLength | 5 | 5 |
+| KeyboardType | `KeyboardType.Number` | `KeyboardType.Number` |
+| BorderColor | `RGBA(180,180,180,1)` | 同左 |
+| BorderThickness | 1 | 1 |
+| RadiusTopLeft 他 | 6 | 6 |
+#### btn_Next1（次へ）
+| プロパティ | 値 |
+|---|---|
+| Text | `"次へ →"` |
+| X | 16 |
+| Y | `Parent.Height - 60` |
+| Width | `Parent.Width - 32` |
+| Height | 44 |
+| Fill | `ColorValue("#1A3A6E")` |
+| Color | White |
+| RadiusTopLeft 他 | 6 |
+| FontWeight | `FontWeight.Semibold` |
+| OnSelect | `Navigate(scrInput2, ScreenTransition.None)` |
+#### OnVisible（scrInput1）
+```powerfx
+Set(varSubTank, "中")
+```
+---
+### scrInput2 — 入力②（空気圧縮機・温水ポンプ・温水タンク）
+#### ヘッダー・プログレスバー（共通）
+| コントロール | 変更箇所 |
+|---|---|
+| lbl_HeaderTitle.Text | `"圧縮機・温水ポンプ"` |
+| lbl_Step.Text | `"2 / 5"` |
+| rect_Progress.Width | `Parent.Width * 0.4` |
+#### 空気圧縮機チップ（btn_AC1 / btn_AC2 / btn_AC3）
+| プロパティ | 1号機 | 2号機 | 3号機 |
+|---|---|---|---|
+| Text | `"1号機"` | `"2号機"` | `"3号機"` |
+| X | 16 | 109 | 202 |
+| Y | 100 | 100 | 100 |
+| Width | 85 | 85 | 85 |
+| Height | 40 | 40 | 40 |
+| Fill | `If(varAC1, ColorValue("#1A3A6E"), White)` | `If(varAC2, ColorValue("#1A3A6E"), White)` | `If(varAC3, ColorValue("#1A3A6E"), White)` |
+| Color | `If(varAC1, White, RGBA(0,0,0,0.7,1))` | 同左 | 同左 |
+| BorderColor | `ColorValue("#1A3A6E")` | 同左 | 同左 |
+| BorderThickness | 1 | 1 | 1 |
+| RadiusTopLeft 他 | 6 | 6 | 6 |
+| OnSelect | `Set(varAC1,!varAC1)` | `Set(varAC2,!varAC2)` | `Set(varAC3,!varAC3)` |
+#### lbl_ACResult（空気圧縮機 選択結果）
+| プロパティ | 値 |
+|---|---|
+| Text | `If(varAC1\|\|varAC2\|\|varAC3, "選択中: "&Substitute(Concat(Filter([{u:"1号機",s:varAC1},{u:"2号機",s:varAC2},{u:"3号機",s:varAC3}],s=true),u,";"),";",", "), "⚠ 1つ以上選択してください")` |
+| X | 16 |
+| Y | 148 |
+| Width | `Parent.Width - 32` |
+| Height | 30 |
+| Fill | `If(varAC1\|\|varAC2\|\|varAC3, RGBA(232,240,252,1), RGBA(255,243,224,1))` |
+| Color | `If(varAC1\|\|varAC2\|\|varAC3, RGBA(26,58,110,1), RGBA(146,64,14,1))` |
+| BorderColor | `If(varAC1\|\|varAC2\|\|varAC3, ColorValue("#93b4e8"), ColorValue("#f59e0b"))` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 4 |
+| PaddingLeft | 8 |
+| Size | 11 |
+#### txt_HeaderPressure（ヘッダー圧力）
+| プロパティ | 値 |
+|---|---|
+| HintText | `"ヘッダー圧力（MPa）"` |
+| X | 16 |
+| Y | 190 |
+| Width | `Parent.Width - 32` |
+| Height | 44 |
+| KeyboardType | `KeyboardType.DecimalNumber` |
+| Format | `TextFormat.Number` |
+| BorderColor | `RGBA(180,180,180,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 6 |
+#### 温水ポンプチップ（btn_HW1 / btn_HW2 / btn_HW3）
+> 空気圧縮機チップと同パターン。Y=270, varHW1〜3 を使用
+#### lbl_HWResult（温水ポンプ 選択結果）
+> lbl_ACResult と同パターン。Y=318, varHW1〜3 を参照
+#### txt_HWPumpPressure / txt_HWTankVol / txt_HWTankTemp
+| コントロール | HintText | Y |
+|---|---|---|
+| txt_HWPumpPressure | `"温水ポンプ圧力（MPa）"` | 360 |
+| txt_HWTankVol | `"温水タンク容量（㎥）"` | 416 |
+| txt_HWTankTemp | `"温水タンク内温度（℃）"` | 472 |
+> 全て Width=`Parent.Width-32`, Height=44, KeyboardType=DecimalNumber
+#### btn_Back2 / btn_Next2（戻る・次へ）
+| プロパティ | 戻る | 次へ |
+|---|---|---|
+| Text | `"← 戻る"` | `"次へ →"` |
+| X | 16 | `Parent.Width/2 + 8` |
+| Y | `Parent.Height - 60` | 同左 |
+| Width | `Parent.Width/2 - 24` | `Parent.Width/2 - 8` |
+| Height | 44 | 44 |
+| Fill | White | `ColorValue("#1A3A6E")` |
+| Color | `RGBA(80,80,80,1)` | White |
+| BorderColor | `RGBA(180,180,180,1)` | `ColorValue("#1A3A6E")` |
+| BorderThickness | 1 | 0 |
+| RadiusTopLeft 他 | 6 | 6 |
+| OnSelect | `Navigate(scrInput1, ScreenTransition.None)` | `Navigate(scrInput3, ScreenTransition.None)` |
+#### OnVisible（scrInput2）
+```powerfx
+Set(varAC1,false); Set(varAC2,false); Set(varAC3,false);
+Set(varHW1,false); Set(varHW2,false); Set(varHW3,false)
+```
+---
+### scrInput3 — 入力③（各種タンク・薬品）
+#### ヘッダー・プログレスバー
+| コントロール | 変更箇所 |
+|---|---|
+| lbl_HeaderTitle.Text | `"各種タンク"` |
+| lbl_Step.Text | `"3 / 5"` |
+| rect_Progress.Width | `Parent.Width * 0.6` |
+#### 水系タンク — TextInput 一覧
+| コントロール名 | HintText | Y |
+|---|---|---|
+| txt_GreyWaterVol | `"中水タンク容量（㎥）"` | 80 |
+| txt_DrinkWaterVol | `"飲料水タンク容量（㎥）"` | 136 |
+| txt_PWTankVol | `"PWタンク容量（㎥）"` | 192 |
+| txt_CityWaterTemp | `"市水温度（℃）"` | 248 |
+| txt_TK605Vol | `"灯油タンク容量 TK605（㎥）"` | 304 |
+> 全て X=16, Width=`Parent.Width-32`, Height=44, KeyboardType=DecimalNumber
+#### 灯油メーター・薬品タンク（横並び2列）
+| コントロール | HintText | X | Y |
+|---|---|---|---|
+| txt_KeroMeter1 | `"灯油メーター1（L）"` | 16 | 368 |
+| txt_ChemTank1 | `"薬品タンク1（L）"` | `Parent.Width/2+4` | 368 |
+| txt_KeroMeter2 | `"灯油メーター2（L）"` | 16 | 424 |
+| txt_ChemTank2 | `"薬品タンク2（L）"` | `Parent.Width/2+4` | 424 |
+```
+Width（横並び）: Parent.Width/2 - 20
+```
+#### btn_Back3 / btn_Next3
+> scrInput2と同パターン。OnSelect: Back→scrInput2, Next→scrInput4
+---
+### scrInput4 — 入力④（蒸気ボイラー・ドレン）
+#### ヘッダー・プログレスバー
+| コントロール | 変更箇所 |
+|---|---|
+| lbl_HeaderTitle.Text | `"蒸気ボイラー・ドレン"` |
+| lbl_Step.Text | `"4 / 5"` |
+| rect_Progress.Width | `Parent.Width * 0.8` |
+#### 蒸気ボイラーチップ（btn_SB1 / btn_SB2）
+| プロパティ | 1号機 | 2号機 |
+|---|---|---|
+| Text | `"1号機"` | `"2号機"` |
+| X | 16 | 130 |
+| Y | 100 | 100 |
+| Width | 106 | 106 |
+| Height | 40 | 40 |
+| Fill | `If(varSB1, ColorValue("#1A3A6E"), White)` | `If(varSB2, ColorValue("#1A3A6E"), White)` |
+| Color | `If(varSB1, White, RGBA(0,0,0,0.7,1))` | 同左 |
+| BorderColor | `ColorValue("#1A3A6E")` | 同左 |
+| BorderThickness | 1 | 1 |
+| RadiusTopLeft 他 | 6 | 6 |
+| OnSelect | `Set(varSB1,!varSB1)` | `Set(varSB2,!varSB2)` |
+#### lbl_SBResult（蒸気ボイラー 選択結果）
+> lbl_ACResultと同パターン。Y=148, varSB1〜2 参照
+#### 蒸気ボイラー・ドレン — TextInput 一覧
+| コントロール名 | HintText | Y |
+|---|---|---|
+| txt_SteamBoilerPressure | `"蒸気ボイラー圧力（MPa）"` | 190 |
+| txt_PWSupplyMeter | `"PW補給水メーター（L）"` | 246 |
+| txt_BoilerFeedPressure | `"ボイラー給水ポンプ圧力（MPa）"` | 302 |
+| txt_DrainConductivity | `"ドレン電導度（μS/cm）"` | 368 |
+| txt_DrainPumpPressure | `"ドレンポンプ圧力（MPa）"` | 424 |
+> 全て X=16, Width=`Parent.Width-32`, Height=44, KeyboardType=DecimalNumber
+#### btn_Back4 / btn_Next4
+> OnSelect: Back→scrInput3, Next→scrInput5
+#### OnVisible（scrInput4）
+```powerfx
+Set(varSB1,false); Set(varSB2,false)
+```
+---
+### scrInput5 — 入力⑤（号機別 運転時間・油面確認・備考）
+#### ヘッダー・プログレスバー
+| コントロール | 変更箇所 |
+|---|---|
+| lbl_HeaderTitle.Text | `"運転時間・油面確認"` |
+| lbl_Step.Text | `"5 / 5"` |
+| rect_Progress.Width | `Parent.Width` |
+#### 号機カード × 3（1号機を例に記載）
+##### lbl_Unit1Header（1号機カードヘッダー）
+| プロパティ | 値 |
+|---|---|
+| Text | `"1号機"` |
+| X | 16 |
+| Y | 68 |
+| Width | `Parent.Width - 32` |
+| Height | 28 |
+| Fill | `RGBA(26,58,110,0.12,1)` |
+| Color | `ColorValue("#1A3A6E")` |
+| FontWeight | `FontWeight.Bold` |
+| Size | 12 |
+| PaddingLeft | 10 |
+| RadiusTopLeft / TopRight | 6 |
+| RadiusBottomLeft / BottomRight | 0 |
+##### txt_RunTime1 / dd_OilLevel1（横並び）
+| プロパティ | 総運転時間 | 油面確認 |
+|---|---|---|
+| コントロール | TextInput | Dropdown |
+| HintText / Items | `"総運転時間（hr）"` | `["OK","要補充","異常"]` |
+| X | 16 | `Parent.Width/2 + 4` |
+| Y | 100 | 100 |
+| Width | `Parent.Width/2 - 20` | `Parent.Width/2 - 20` |
+| Height | 44 | 44 |
+| KeyboardType | `KeyboardType.DecimalNumber` | — |
+| Format | `TextFormat.Number` | — |
+| BorderColor | `RGBA(180,180,180,1)` | 同左 |
+| BorderThickness | 1 | 1 |
+| RadiusTopLeft 他 | 6 | 6 |
+> 2号機カード（Y=160〜210）・3号機カード（Y=220〜270）を同パターンで作成
+> 変数: txt_RunTime2, dd_OilLevel2 / txt_RunTime3, dd_OilLevel3
+#### txt_Notes（特記事項・備考）
+| プロパティ | 値 |
+|---|---|
+| HintText | `"異常・特記事項があれば入力"` |
+| X | 16 |
+| Y | 296 |
+| Width | `Parent.Width - 32` |
+| Height | 80 |
+| Mode | `TextMode.MultiLine` |
+| BorderColor | `RGBA(180,180,180,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 6 |
+#### btn_Back5 / btn_Next5
+| プロパティ | 戻る | 確認画面へ |
+|---|---|---|
+| Text | `"← 戻る"` | `"確認画面へ →"` |
+| OnSelect | `Navigate(scrInput4, ScreenTransition.None)` | `Navigate(scrConfirm, ScreenTransition.Fade)` |
+> その他プロパティは scrInput2 の戻る/次へボタンと同じ
+---
+### scrConfirm — 確認・送信画面
+#### ヘッダー
+| プロパティ | 値 |
+|---|---|
+| lbl_HeaderTitle.Text | `"送信前確認"` |
+| rect_Progress 非表示 | `Visible: false` |
+#### 確認グループ（グループ × 5）
+各グループは背景ラベル + 項目ラベル × 数の構成。
+**グループ背景 rect_Group1〜5**
+| プロパティ | 値 |
+|---|---|
+| Fill | `RGBA(245,247,250,1)` |
+| BorderColor | `RGBA(200,210,225,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 8 |
+| Width | `Parent.Width - 32` |
+| X | 16 |
+**確認行ラベルパターン（キー）**
+| プロパティ | 値 |
+|---|---|
+| Size | 11 |
+| Color | `RGBA(100,100,100,1)` |
+| Align | `Align.Left` |
+**確認行ラベルパターン（値）**
+| プロパティ | 値 |
+|---|---|
+| Size | 12 |
+| Color | `RGBA(20,20,20,1)` |
+| FontWeight | `FontWeight.Semibold` |
+| Align | `Align.Right` |
+**各グループのラベル値一覧**
+```
+グループ1: 基本情報
+  点検日時: Text(dtpInspection.SelectedDate,"yyyy/mm/dd")
+  運転時間: txt_StartTime.Text & " 〜 " & txt_EndTime.Text
+グループ2: 灯油・ボイラー
+  サブタンクレベル: varSubTank
+  灯油メーター: txt_HWBoilerKerosene.Text & " L"
+グループ3: 圧縮機・温水
+  空気圧縮機: Substitute(Concat(Filter([{u:"1号機",s:varAC1},{u:"2号機",s:varAC2},{u:"3号機",s:varAC3}],s=true),u,";"),";",", ")
+  ヘッダー圧力: txt_HeaderPressure.Text & " MPa"
+  温水ポンプ: Substitute(Concat(Filter([{u:"1号機",s:varHW1},{u:"2号機",s:varHW2},{u:"3号機",s:varHW3}],s=true),u,";"),";",", ")
+グループ4: 蒸気ボイラー
+  蒸気ボイラー: Substitute(Concat(Filter([{u:"1号機",s:varSB1},{u:"2号機",s:varSB2}],s=true),u,";"),";",", ")
+  蒸気ボイラー圧力: txt_SteamBoilerPressure.Text & " MPa"
+グループ5: 運転時間・油面
+  1号機: txt_RunTime1.Text & " hr / " & dd_OilLevel1.Selected.Value
+  2号機: txt_RunTime2.Text & " hr / " & dd_OilLevel2.Selected.Value
+  3号機: txt_RunTime3.Text & " hr / " & dd_OilLevel3.Selected.Value
+```
+#### btn_Edit（修正ボタン）
+| プロパティ | 値 |
+|---|---|
+| Text | `"← 修正する"` |
+| X | 16 |
+| Y | `Parent.Height - 120` |
+| Width | `Parent.Width - 32` |
+| Height | 44 |
+| Fill | White |
+| Color | `RGBA(80,80,80,1)` |
+| BorderColor | `RGBA(180,180,180,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 6 |
+| OnSelect | `Navigate(scrInput1, ScreenTransition.None)` |
+#### btn_Submit（送信ボタン）
+| プロパティ | 値 |
+|---|---|
+| Text | `"✓ SharePointに送信する"` |
+| X | 16 |
+| Y | `Parent.Height - 66` |
+| Width | `Parent.Width - 32` |
+| Height | 50 |
+| Fill | `ColorValue("#1A7E4A")` |
+| Color | White |
+| RadiusTopLeft 他 | 8 |
+| FontWeight | `FontWeight.Semibold` |
+| Size | 16 |
+**OnSelect 完全版:**
+```powerfx
+Set(varAirCompResult, Concat(Filter([{u:"1号機",s:varAC1},{u:"2号機",s:varAC2},{u:"3号機",s:varAC3}],s=true),u,";"));
+Set(varHWPumpResult,  Concat(Filter([{u:"1号機",s:varHW1},{u:"2号機",s:varHW2},{u:"3号機",s:varHW3}],s=true),u,";"));
+Set(varSteamBoilerResult, Concat(Filter([{u:"1号機",s:varSB1},{u:"2号機",s:varSB2}],s=true),u,";"));
+If(
+    IsBlank(varAirCompResult), Notify("空気圧縮機の運転号機を選択してください", NotificationType.Error),
+    IsBlank(varHWPumpResult),  Notify("温水ポンプの運転号機を選択してください", NotificationType.Error),
+    IsBlank(varSteamBoilerResult), Notify("蒸気ボイラーの運転号機を選択してください", NotificationType.Error),
+    Patch(
+        UtilityDailyReport,
+        Defaults(UtilityDailyReport),
+        {
+            '点検日時': dtpInspection.SelectedDate,
+            '灯油サブタンクレベル（液面）': {Value: varSubTank},
+            '温水ボイラー灯油メーター': Value(txt_HWBoilerKerosene.Text),
+            '運転開始時間': txt_StartTime.Text,
+            '運転終了時間': txt_EndTime.Text,
+            '空気圧縮機運転号機': ForAll(Split(varAirCompResult,";"),{Value:Result}),
+            'ヘッダー圧力（Mpa)': Value(txt_HeaderPressure.Text),
+            '温水ポンプ運転号機': ForAll(Split(varHWPumpResult,";"),{Value:Result}),
+            '温水ポンプ圧力(Mpa)': Value(txt_HWPumpPressure.Text),
+            '温水タンク容量(㎥）': Value(txt_HWTankVol.Text),
+            '温水タンク内温度（℃）': Value(txt_HWTankTemp.Text),
+            '中水タンク容量(㎥)': Value(txt_GreyWaterVol.Text),
+            '飲料水タンク容量（㎥）': Value(txt_DrinkWaterVol.Text),
+            'PWタンク容量(㎥）': Value(txt_PWTankVol.Text),
+            '市水温度（℃）': Value(txt_CityWaterTemp.Text),
+            '灯油タンク容量TK６０５（㎥）': Value(txt_TK605Vol.Text),
+            '灯油メーター１（L)': Value(txt_KeroMeter1.Text),
+            '薬品タンク１（L)': Value(txt_ChemTank1.Text),
+            '灯油メーター2（L)': Value(txt_KeroMeter2.Text),
+            '薬品タンク2（L)': Value(txt_ChemTank2.Text),
+            '蒸気ボイラー運転号機': ForAll(Split(varSteamBoilerResult,";"),{Value:Result}),
+            '蒸気ボイラー圧力（Mpa）': Value(txt_SteamBoilerPressure.Text),
+            'PW補給水メーター（L)': Value(txt_PWSupplyMeter.Text),
+            'ボイラー給水ポンプ圧力（Mpa）': Value(txt_BoilerFeedPressure.Text),
+            'ドレン電導度': Value(txt_DrainConductivity.Text),
+            'ドレンポンプ圧力': Value(txt_DrainPumpPressure.Text),
+            '総運転時間１': Value(txt_RunTime1.Text),
+            '油面確認１': dd_OilLevel1.Selected.Value,
+            '総運転時間2': Value(txt_RunTime2.Text),
+            '油面確認2': dd_OilLevel2.Selected.Value,
+            '総運転時間3': Value(txt_RunTime3.Text),
+            '油面確認3': dd_OilLevel3.Selected.Value
+        }
+    );
+    Navigate(scrComplete, ScreenTransition.Fade)
+)
+```
+---
+### scrComplete — 送信完了画面
+#### lbl_CompleteIcon
+| プロパティ | 値 |
+|---|---|
+| Text | `"✅"` |
+| X | `Parent.Width/2 - 32` |
+| Y | 220 |
+| Width | 64 |
+| Height | 64 |
+| Size | 48 |
+| Align | `Align.Center` |
+#### lbl_CompleteTitle
+| プロパティ | 値 |
+|---|---|
+| Text | `"送信が完了しました"` |
+| X | 16 |
+| Y | 296 |
+| Width | `Parent.Width - 32` |
+| Height | 40 |
+| Size | 18 |
+| FontWeight | `FontWeight.Bold` |
+| Align | `Align.Center` |
+| Color | `RGBA(20,20,20,1)` |
+#### lbl_CompleteSub
+| プロパティ | 値 |
+|---|---|
+| Text | `Text(Today(),"yyyy年mm月dd日") & " 分の" & Char(10) & "ユーティリティ日報をSharePointに保存しました"` |
+| X | 16 |
+| Y | 344 |
+| Width | `Parent.Width - 32` |
+| Height | 60 |
+| Size | 13 |
+| Color | `RGBA(80,80,80,1)` |
+| Align | `Align.Center` |
+#### btn_BackHome
+| プロパティ | 値 |
+|---|---|
+| Text | `"ホームへ戻る"` |
+| X | 16 |
+| Y | 430 |
+| Width | `Parent.Width - 32` |
+| Height | 50 |
+| Fill | `ColorValue("#1A7E4A")` |
+| Color | White |
+| RadiusTopLeft 他 | 8 |
+| FontWeight | `FontWeight.Semibold` |
+| Size | 16 |
+| OnSelect | `Navigate(scrHome, ScreenTransition.Fade)` |
+---
+### scrHistory — 履歴閲覧画面
+#### ヘッダー
+| プロパティ | 値 |
+|---|---|
+| lbl_HeaderTitle.Text | `"過去データ履歴"` |
+| プログレスバー | 非表示（Visible: false） |
+#### txt_Search（検索ボックス）
+| プロパティ | 値 |
+|---|---|
+| HintText | `"日付で絞り込み（例: 2026/06）"` |
+| X | 16 |
+| Y | 60 |
+| Width | `Parent.Width - 32` |
+| Height | 40 |
+| BorderColor | `RGBA(180,180,180,1)` |
+| BorderThickness | 1 |
+| RadiusTopLeft 他 | 20 |
+| OnChange | `Set(varSearch, Self.Text)` |
+#### gal_History（履歴Gallery）
+| プロパティ | 値 |
+|---|---|
+| Items | `Sort(Filter(UtilityDailyReport, IsBlank(varSearch) \|\| Text('点検日時',"yyyy/mm") = varSearch), '点検日時', Descending)` |
+| X | 0 |
+| Y | 112 |
+| Width | `Parent.Width` |
+| Height | `Parent.Height - 112` |
+| TemplateSize | 64 |
+| TemplatePadding | 0 |
+**Gallery 内コントロール:**
+| コントロール | Text / プロパティ |
+|---|---|
+| lbl_HistDate | `Text(ThisItem.'点検日時', "yyyy/mm/dd（aaa）")` / Size:14, FontWeight:Bold |
+| lbl_HistMeta | `ThisItem.'空気圧縮機運転号機' & " / 蒸気" & ThisItem.'蒸気ボイラー運転号機'` / Size:11, Color:Gray |
+| lbl_Arrow | `"›"` / Size:20, Align:Right, Color:Gray |
+| rect_Divider | Height:1, Fill:RGBA(220,220,220,1), Y:TemplateHeight-1 |
+#### btn_BackFromHistory
+| プロパティ | 値 |
+|---|---|
+| Text | `"← ホームへ"` |
+| X | 16 |
+| Y | 8 |
+| Width | 80 |
+| Height | 34 |
+| Fill | Transparent |
+| Color | White |
+| Size | 13 |
+| OnSelect | `Navigate(scrHome, ScreenTransition.Fade)` |
+---
+*最終更新: 2026-06-02 (rev.4 — 全9画面コントロール配置コード追加) | 担当: 保全技術課*
