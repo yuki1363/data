@@ -60,16 +60,19 @@ Power Automate が監視する Outlook アドレスを決める。
 | 値（式） | 以下の式を貼り付け |
 
 ```
-substring(
-  body('新しいメールが届いたとき_(V3)')?['body'],
-  add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15),
-  sub(
-    indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_END==='),
-    add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15)
-  )
+base64ToString(
+  trim(substring(
+    body('新しいメールが届いたとき_(V3)')?['body'],
+    add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15),
+    sub(
+      indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_END==='),
+      add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15)
+    )
+  ))
 )
 ```
 
+> ⚠️ アプリ側でJSONをBase64エンコードして送信します。`base64ToString()` でデコードしてからJSONを解析してください。
 > ⚠️ `===JSON_START===` は15文字。`add(..., 15)` はこの文字数分オフセットするための値。
 
 ### 2-5. アクション③「JSONの解析」
