@@ -655,7 +655,7 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
     <div class="complete-icon">✅</div>
     <div class="complete-title">送信完了！</div>
     <div class="complete-sub" id="completeSub">
-      メールアプリが開きます。<br>送信ボタンを押して完了してください。<br><br>
+      Outlookが開きます。<br>宛先を入力して送信ボタンを押してください。<br><br>
       送信後、SharePointに自動で保存されます。
     </div>
     <div style="margin-top: 32px; width: 100%;">
@@ -679,12 +679,9 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
 
 <script>
 // ══════════════════════════════════════════
-// 設定 — ここを変更してください
+// 設定
 // ══════════════════════════════════════════
 const CONFIG = {
-  // Power Automate に転送するメールアドレス（Outlookアドレス）
-  SEND_TO: 'utility-report@yourdomain.com',
-  // メール件名のプレフィックス
   SUBJECT_PREFIX: 'ユーティリティ日報',
 };
 
@@ -1014,26 +1011,42 @@ function buildConfirm() {
 }
 
 // ══════════════════════════════════════════
-// 送信処理（mailto）
+// 送信処理（Outlook 起動）
 // ══════════════════════════════════════════
 function submitReport() {
   const data = getFormData();
   const dateStr = data.datetime ? new Date(data.datetime).toLocaleDateString('ja-JP') : '日付不明';
   const subject = encodeURIComponent(`${CONFIG.SUBJECT_PREFIX} ${dateStr}`);
 
-  // Power Automate が解析しやすいようにJSON本文を組み立て
-  const body = encodeURIComponent(
+  const bodyText =
     `【ユーティリティ日報 自動送信】\n\n` +
     `このメールは自動生成されました。本文のJSONをPower Automateで処理してください。\n\n` +
     `===JSON_START===\n` +
     JSON.stringify(data, null, 2) +
-    `\n===JSON_END===`
-  );
+    `\n===JSON_END===`;
+  const body = encodeURIComponent(bodyText);
 
-  const mailtoLink = `mailto:${CONFIG.SEND_TO}?subject=${subject}&body=${body}`;
+  // Outlookアプリ（ms-outlook://）を試み、失敗したらOutlookウェブを開く
+  const outlookApp  = `ms-outlook://compose?subject=${subject}&body=${body}`;
+  const outlookWeb  = `https://outlook.office.com/mail/deeplink/compose?subject=${subject}&body=${body}`;
 
-  // メールアプリを開く
-  window.location.href = mailtoLink;
+  // iframeで ms-outlook:// を試行し、一定時間内に反応がなければウェブへフォールバック
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  iframe.src = outlookApp;
+
+  const fallbackTimer = setTimeout(() => {
+    document.body.removeChild(iframe);
+    window.open(outlookWeb, '_blank');
+  }, 1500);
+
+  // ページがblurしたらアプリが起動したとみなしてタイマーをキャンセル
+  window.addEventListener('blur', function onBlur() {
+    clearTimeout(fallbackTimer);
+    window.removeEventListener('blur', onBlur);
+    setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 2000);
+  }, { once: true });
 
   // 履歴に保存
   const history = loadHistory();
@@ -1044,7 +1057,7 @@ function submitReport() {
   clearDraft();
   updateHomeState();
 
-  setTimeout(() => showScreen('scrComplete'), 500);
+  setTimeout(() => showScreen('scrComplete'), 600);
 }
 
 // ══════════════════════════════════════════
