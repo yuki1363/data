@@ -655,8 +655,11 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
     <div class="complete-icon">✅</div>
     <div class="complete-title">送信完了！</div>
     <div class="complete-sub" id="completeSub">
-      Outlookが開きます。<br>宛先を入力して送信ボタンを押してください。<br><br>
-      送信後、SharePointに自動で保存されます。
+      <strong>utility_report.json</strong> をダウンロードしました。<br><br>
+      Outlookが開いたら：<br>
+      ① 宛先を入力<br>
+      ② ダウンロードしたファイルを添付<br>
+      ③ 送信
     </div>
     <div style="margin-top: 32px; width: 100%;">
       <button class="btn btn-primary btn-full" style="width:100%;margin-bottom:10px" onclick="showScreen('scrHome')">ホームへ戻る</button>
@@ -1011,26 +1014,32 @@ function buildConfirm() {
 }
 
 // ══════════════════════════════════════════
-// 送信処理（Outlook 起動）
+// 送信処理（JSONダウンロード → Outlook 起動）
 // ══════════════════════════════════════════
 function submitReport() {
   const data = getFormData();
-  const dateStr = data.datetime ? new Date(data.datetime).toLocaleDateString('ja-JP') : '日付不明';
-  const subject = encodeURIComponent(`${CONFIG.SUBJECT_PREFIX} ${dateStr}`);
+  const dateStr = data.datetime ? new Date(data.datetime).toLocaleString('ja-JP') : '日付不明';
 
-  const bodyText =
-    `【ユーティリティ日報 自動送信】\n\n` +
-    `このメールは自動生成されました。本文のJSONをPower Automateで処理してください。\n\n` +
-    `===JSON_START===\n` +
-    JSON.stringify(data, null, 2) +
-    `\n===JSON_END===`;
-  const body = encodeURIComponent(bodyText);
+  // ① JSONファイルをダウンロード
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'utility_report.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
 
-  // Outlookアプリ（ms-outlook://）を試み、失敗したらOutlookウェブを開く
-  const outlookApp  = `ms-outlook://compose?subject=${subject}&body=${body}`;
-  const outlookWeb  = `https://outlook.office.com/mail/deeplink/compose?subject=${subject}&body=${body}`;
+  // ② Outlook を開く（件名＋日付のみの本文）
+  const subject = encodeURIComponent(CONFIG.SUBJECT_PREFIX);
+  const body = encodeURIComponent(
+    `点検日時: ${dateStr}\n\n` +
+    `添付の utility_report.json をご確認ください。`
+  );
 
-  // iframeで ms-outlook:// を試行し、一定時間内に反応がなければウェブへフォールバック
+  const outlookApp = `ms-outlook://compose?subject=${subject}&body=${body}`;
+  const outlookWeb = `https://outlook.office.com/mail/deeplink/compose?subject=${subject}&body=${body}`;
+
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
@@ -1041,14 +1050,13 @@ function submitReport() {
     window.open(outlookWeb, '_blank');
   }, 1500);
 
-  // ページがblurしたらアプリが起動したとみなしてタイマーをキャンセル
   window.addEventListener('blur', function onBlur() {
     clearTimeout(fallbackTimer);
     window.removeEventListener('blur', onBlur);
     setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 2000);
   }, { once: true });
 
-  // 履歴に保存
+  // ③ 履歴に保存
   const history = loadHistory();
   data._status = 'sent';
   data._sentAt = new Date().toISOString();
