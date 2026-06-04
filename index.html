@@ -378,23 +378,8 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
   </div>
 </div>
 
-<!-- ══ SCREEN: INPUT2 — 圧縮機・温水ポンプ ══ -->
+<!-- ══ SCREEN: INPUT2 — 温水ポンプ・圧縮機 ══ -->
 <div class="screen" id="scrInput2">
-  <div class="section-title">🔧 空気圧縮機</div>
-  <div class="form-group">
-    <label class="form-label">運転号機（複数選択可）</label>
-    <div class="chip-group">
-      <button class="chip-btn" onclick="toggleMultiChip('ac','1号機',this)">1号機</button>
-      <button class="chip-btn" onclick="toggleMultiChip('ac','2号機',this)">2号機</button>
-      <button class="chip-btn" onclick="toggleMultiChip('ac','3号機',this)">3号機</button>
-    </div>
-    <div class="chip-result warn" id="result_ac">⚠ 号機を1つ以上選択してください</div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">ヘッダー圧力 (MPa)</label>
-    <input type="number" class="form-input" id="f_headerPressure" placeholder="例: 0.65" step="0.01">
-  </div>
-
   <div class="section-title">💧 温水ポンプ</div>
   <div class="form-group">
     <label class="form-label">運転号機（複数選択可）</label>
@@ -416,6 +401,21 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
   <div class="form-group">
     <label class="form-label">温水タンク内温度 (℃)</label>
     <input type="number" class="form-input" id="f_hwTankTemp" placeholder="例: 65.0" step="0.1">
+  </div>
+
+  <div class="section-title">🔧 空気圧縮機</div>
+  <div class="form-group">
+    <label class="form-label">運転号機（複数選択可）</label>
+    <div class="chip-group">
+      <button class="chip-btn" onclick="toggleMultiChip('ac','1号機',this)">1号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('ac','2号機',this)">2号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('ac','3号機',this)">3号機</button>
+    </div>
+    <div class="chip-result warn" id="result_ac">⚠ 号機を1つ以上選択してください</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">ヘッダー圧力 (MPa)</label>
+    <input type="number" class="form-input" id="f_headerPressure" placeholder="例: 0.65" step="0.01">
   </div>
 
   <div class="bottom-bar">
@@ -483,15 +483,11 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
       <button class="chip-btn" onclick="toggleMultiChip('sb','1号機',this)">1号機</button>
       <button class="chip-btn" onclick="toggleMultiChip('sb','2号機',this)">2号機</button>
     </div>
-    <div class="chip-result warn" id="result_sb">⚠ 号機を1つ以上選択してください</div>
+    <div class="chip-result" id="result_sb" style="display:none"></div>
   </div>
   <div class="form-group">
     <label class="form-label">蒸気ボイラー圧力 (MPa)</label>
     <input type="number" class="form-input" id="f_steamBoilerPressure" placeholder="例: 0.78" step="0.01">
-  </div>
-  <div class="form-group">
-    <label class="form-label">PW補給水メーター (L)</label>
-    <input type="number" class="form-input" id="f_pwSupplyMeter" placeholder="例: 450" step="1">
   </div>
   <div class="form-group">
     <label class="form-label">ボイラー給水ポンプ圧力 (MPa)</label>
@@ -533,6 +529,7 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
           <option>OK</option>
           <option>要補充</option>
           <option>異常</option>
+          <option>起動なし</option>
         </select>
       </div>
     </div>
@@ -552,6 +549,7 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
           <option>OK</option>
           <option>要補充</option>
           <option>異常</option>
+          <option>起動なし</option>
         </select>
       </div>
     </div>
@@ -571,9 +569,15 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
           <option>OK</option>
           <option>要補充</option>
           <option>異常</option>
+          <option>起動なし</option>
         </select>
       </div>
     </div>
+  </div>
+
+  <div class="form-group" style="padding-top:8px">
+    <label class="form-label">PW補給水メーター (L)</label>
+    <input type="number" class="form-input" id="f_pwSupplyMeter" placeholder="例: 450" step="1">
   </div>
 
   <div class="section-title">📝 特記事項・備考</div>
@@ -764,9 +768,7 @@ function goNext(step) {
     if (!validateMultiChip('ac')) { showToast('⚠ 空気圧縮機の号機を選択してください'); return; }
     if (!validateMultiChip('hw')) { showToast('⚠ 温水ポンプの号機を選択してください'); return; }
   }
-  if (step === 4) {
-    if (!validateMultiChip('sb')) { showToast('⚠ 蒸気ボイラーの号機を選択してください'); return; }
-  }
+  // 蒸気ボイラー号機は任意選択
   if (step === 5) {
     buildConfirm();
   }
@@ -801,9 +803,13 @@ function updateChipResult(group) {
   if (multiChips[group].length > 0) {
     el.textContent = '✓ 選択中: ' + multiChips[group].join('、');
     el.className = 'chip-result ok';
+    el.style.display = '';
+  } else if (group === 'sb') {
+    el.style.display = 'none';
   } else {
     el.textContent = '⚠ 号機を1つ以上選択してください';
     el.className = 'chip-result warn';
+    el.style.display = '';
   }
 }
 
