@@ -1190,22 +1190,29 @@ function renderHistory() {
     el.innerHTML = '<div class="hist-empty">📭 履歴がありません</div>';
     return;
   }
-  el.innerHTML = filtered.map((h, i) => {
+  el.innerHTML = filtered.map(h => {
     const realIdx = list.indexOf(h);
     const dt = h.datetime ? new Date(h.datetime).toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}) : '日付不明';
     const badge = h._status === 'sent'
       ? '<span class="hist-badge sent">送信済</span>'
       : '<span class="hist-badge draft">下書き</span>';
     const meta = [h.airCompressorUnit&&`圧縮機:${h.airCompressorUnit.replace(/;/g,'/')}`, h.steamBoilerUnit&&`蒸気:${h.steamBoilerUnit.replace(/;/g,'/')}`].filter(Boolean).join(' ');
-    return `<div class="hist-item" onclick="showHistDetail(${realIdx})">
-      <div style="flex:1">
+    return `<div class="hist-item" data-idx="${realIdx}">
+      <div style="flex:1;pointer-events:none">
         <div class="hist-date">${dt}</div>
         <div class="hist-meta">${meta||'—'}</div>
       </div>
-      ${badge}
-      <span style="color:var(--gray-400);font-size:18px;margin-left:4px">›</span>
+      <span style="pointer-events:none">${badge}</span>
+      <span style="color:var(--gray-400);font-size:18px;margin-left:4px;pointer-events:none">›</span>
     </div>`;
   }).join('');
+
+  // イベント委譲でタップを確実に検知
+  el.querySelectorAll('.hist-item').forEach(item => {
+    item.addEventListener('click', () => {
+      showHistDetail(parseInt(item.dataset.idx, 10));
+    });
+  });
 }
 
 function showHistDetail(idx) {
