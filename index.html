@@ -327,6 +327,14 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
       </div>
       <span class="arrow">›</span>
     </div>
+    <div class="menu-card" id="btnEditToday" style="display:none" onclick="editToday()">
+      <div class="menu-icon" style="background:#e8f8f0">✏️</div>
+      <div class="menu-text">
+        <div class="mt">本日分を修正する</div>
+        <div class="ms" style="color:var(--green)">送信済みデータを修正</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
     <div class="menu-card" onclick="showScreen('scrHistory')">
       <div class="menu-icon gray">📂</div>
       <div class="menu-text">
@@ -700,6 +708,8 @@ const CONFIG = {
 const SCREENS = ['scrHome','scrInput1','scrInput2','scrInput3','scrInput4','scrInput5','scrConfirm','scrComplete','scrHistory'];
 const TOTAL_STEPS = 5;
 let currentScreen = 'scrHome';
+let isEditing = false;
+let editingIndex = -1;
 
 // 複数選択チップの選択状態
 const multiChips = { ac: [], hw: [], sb: [] };
@@ -939,11 +949,16 @@ function loadDraft() {
 
 function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
 
+function todayPrefix() {
+  return new Date().toISOString().slice(0, 10); // "2026-06-04"
+}
+
 function updateHomeState() {
   const draft = loadDraft();
   const history = loadHistory();
-  const today = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'/');
-  const todaySent = history.some(h => h._status === 'sent' && h.datetime && h.datetime.startsWith(today.replace(/\//g,'-').slice(0,10)));
+  const prefix = todayPrefix();
+  const todayIdx = history.findIndex(h => h._status === 'sent' && (h.datetime || '').startsWith(prefix));
+  const todaySent = todayIdx >= 0;
 
   // 今日の送信済み確認
   const statusEl = document.getElementById('todayStatus');
@@ -964,6 +979,9 @@ function updateHomeState() {
     resumeBtn.style.display = 'none';
     document.getElementById('draftInfo').classList.add('hidden');
   }
+
+  // 修正ボタン表示（本日送信済みのときのみ）
+  document.getElementById('btnEditToday').style.display = todaySent ? 'flex' : 'none';
 }
 
 function startEntry() {
@@ -982,8 +1000,27 @@ function startEntry() {
 }
 
 function resumeDraft() {
+  isEditing = false;
+  editingIndex = -1;
   const draft = loadDraft();
   if (draft) setFormData(draft);
+  showScreen('scrInput1');
+}
+
+function editToday() {
+  const history = loadHistory();
+  const prefix = todayPrefix();
+  const idx = history.findIndex(h => h._status === 'sent' && (h.datetime || '').startsWith(prefix));
+  if (idx < 0) return;
+  isEditing = true;
+  editingIndex = idx;
+  clearDraft();
+  // フォームリセット後に本日データをロード
+  document.querySelectorAll('.form-input').forEach(el => el.value = '');
+  multiChips.ac = []; multiChips.hw = []; multiChips.sb = [];
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#chips_subTank [data-val="中"]').classList.add('active');
+  setFormData(history[idx]);
   showScreen('scrInput1');
 }
 
@@ -1047,12 +1084,18 @@ function submitReport() {
   document.getElementById('btnOutlookApp').href = `ms-outlook://compose?subject=${subject}&body=${body}`;
   document.getElementById('btnOutlookWeb').href = `https://outlook.office.com/mail/deeplink/compose?subject=${subject}&body=${body}`;
 
-  // ③ 履歴に保存
+  // ③ 履歴に保存（修正モードなら既存エントリを上書き）
   const history = loadHistory();
   data._status = 'sent';
   data._sentAt = new Date().toISOString();
-  history.unshift(data);
+  if (isEditing && editingIndex >= 0 && editingIndex < history.length) {
+    history[editingIndex] = data;
+  } else {
+    history.unshift(data);
+  }
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 60)));
+  isEditing = false;
+  editingIndex = -1;
   clearDraft();
   updateHomeState();
 
