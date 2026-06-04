@@ -153,7 +153,7 @@ Power Automate が監視する Outlook アドレスを決める。
 | 飲料水タンク容量（㎥） | `drinkWaterVol` |
 | PWタンク容量(㎥） | `pwTankVol` |
 | 市水温度（℃） | `cityWaterTemp` |
-| 灯油タンク容量（㎥） | `tk605Vol` |
+| 灯油タンク（㎥） | `tk605Vol` |
 | 灯油メーター１（L) | `keroMeter1` |
 | 薬品タンク１（L) | `chemTank1` |
 | 灯油メーター2（L) | `keroMeter2` |
