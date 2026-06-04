@@ -689,6 +689,79 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
   <div id="historyList"></div>
 </div>
 
+<!-- ══ SCREEN: HISTORY DETAIL ══ -->
+<div class="screen" id="scrHistDetail">
+  <div class="section-title" id="hd_title">詳細</div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">基本情報</div>
+    <div class="confirm-row"><span class="confirm-key">点検日時</span><span class="confirm-val" id="hd_datetime">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">運転時間</span><span class="confirm-val" id="hd_opTime">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">灯油系統</div>
+    <div class="confirm-row"><span class="confirm-key">サブタンクレベル</span><span class="confirm-val" id="hd_subTank">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">温水ボイラー灯油メーター</span><span class="confirm-val" id="hd_hwBoilerKerosene">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">温水ポンプ</div>
+    <div class="confirm-row"><span class="confirm-key">運転号機</span><span class="confirm-val" id="hd_hw">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ポンプ圧力</span><span class="confirm-val" id="hd_hwPumpPressure">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">温水タンク</span><span class="confirm-val" id="hd_hwTankVol">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">温水タンク温度</span><span class="confirm-val" id="hd_hwTankTemp">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">空気圧縮機</div>
+    <div class="confirm-row"><span class="confirm-key">運転号機</span><span class="confirm-val" id="hd_ac">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ヘッダー圧力</span><span class="confirm-val" id="hd_headerPressure">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">各種タンク</div>
+    <div class="confirm-row"><span class="confirm-key">中水タンク</span><span class="confirm-val" id="hd_greyWater">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">飲料水タンク</span><span class="confirm-val" id="hd_drinkWater">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">PWタンク</span><span class="confirm-val" id="hd_pwTank">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">市水温度</span><span class="confirm-val" id="hd_cityWaterTemp">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">灯油タンク</span><span class="confirm-val" id="hd_tk605">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">灯油メーター1</span><span class="confirm-val" id="hd_keroMeter1">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">薬品タンク1</span><span class="confirm-val" id="hd_chemTank1">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">灯油メーター2</span><span class="confirm-val" id="hd_keroMeter2">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">薬品タンク2</span><span class="confirm-val" id="hd_chemTank2">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">蒸気ボイラー・ドレン</div>
+    <div class="confirm-row"><span class="confirm-key">蒸気ボイラー号機</span><span class="confirm-val" id="hd_sb">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">蒸気ボイラー圧力</span><span class="confirm-val" id="hd_steamPressure">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ボイラー給水ポンプ圧力</span><span class="confirm-val" id="hd_boilerFeedPressure">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ドレン電導度</span><span class="confirm-val" id="hd_drainConductivity">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ドレンポンプ圧力</span><span class="confirm-val" id="hd_drainPumpPressure">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">総運転時間・油面</div>
+    <div class="confirm-row"><span class="confirm-key">総運転時間１</span><span class="confirm-val" id="hd_runTime1">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">油面１</span><span class="confirm-val" id="hd_oilLevel1">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">総運転時間２</span><span class="confirm-val" id="hd_runTime2">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">油面２</span><span class="confirm-val" id="hd_oilLevel2">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">総運転時間３</span><span class="confirm-val" id="hd_runTime3">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">油面３</span><span class="confirm-val" id="hd_oilLevel3">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">PW補給水メーター</span><span class="confirm-val" id="hd_pwSupplyMeter">-</span></div>
+  </div>
+
+  <div id="hd_notesGroup" class="confirm-group" style="display:none">
+    <div class="confirm-group-title">特記事項</div>
+    <div class="confirm-row"><span class="confirm-val" id="hd_notes" style="text-align:left;max-width:100%">-</span></div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-secondary btn-full" onclick="showScreen('scrHistory')">← 戻る</button>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -705,7 +778,7 @@ const CONFIG = {
 // ══════════════════════════════════════════
 // 状態管理
 // ══════════════════════════════════════════
-const SCREENS = ['scrHome','scrInput1','scrInput2','scrInput3','scrInput4','scrInput5','scrConfirm','scrComplete','scrHistory'];
+const SCREENS = ['scrHome','scrInput1','scrInput2','scrInput3','scrInput4','scrInput5','scrConfirm','scrComplete','scrHistory','scrHistDetail'];
 const TOTAL_STEPS = 5;
 let currentScreen = 'scrHome';
 let isEditing = false;
@@ -737,6 +810,7 @@ function updateHeader(id) {
     scrConfirm: '送信前確認',
     scrComplete: '送信完了',
     scrHistory: '過去データ履歴',
+    scrHistDetail: 'データ詳細',
   };
   const stepMap = { scrInput1:1, scrInput2:2, scrInput3:3, scrInput4:4, scrInput5:5 };
 
@@ -769,7 +843,7 @@ document.getElementById('btnHeaderBack').onclick = () => {
   const backMap = {
     scrInput1: 'scrHome', scrInput2: 'scrInput1', scrInput3: 'scrInput2',
     scrInput4: 'scrInput3', scrInput5: 'scrInput4',
-    scrConfirm: 'scrInput5', scrHistory: 'scrHome',
+    scrConfirm: 'scrInput5', scrHistory: 'scrHome', scrHistDetail: 'scrHistory',
   };
   if (backMap[currentScreen]) showScreen(backMap[currentScreen]);
 };
@@ -1120,20 +1194,68 @@ function renderHistory() {
     el.innerHTML = '<div class="hist-empty">📭 履歴がありません</div>';
     return;
   }
-  el.innerHTML = filtered.map(h => {
+  el.innerHTML = filtered.map((h, i) => {
+    const realIdx = list.indexOf(h);
     const dt = h.datetime ? new Date(h.datetime).toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}) : '日付不明';
     const badge = h._status === 'sent'
       ? '<span class="hist-badge sent">送信済</span>'
       : '<span class="hist-badge draft">下書き</span>';
     const meta = [h.airCompressorUnit&&`圧縮機:${h.airCompressorUnit.replace(/;/g,'/')}`, h.steamBoilerUnit&&`蒸気:${h.steamBoilerUnit.replace(/;/g,'/')}`].filter(Boolean).join(' ');
-    return `<div class="hist-item">
+    return `<div class="hist-item" onclick="showHistDetail(${realIdx})">
       <div style="flex:1">
         <div class="hist-date">${dt}</div>
         <div class="hist-meta">${meta||'—'}</div>
       </div>
       ${badge}
+      <span style="color:var(--gray-400);font-size:18px;margin-left:4px">›</span>
     </div>`;
   }).join('');
+}
+
+function showHistDetail(idx) {
+  const list = loadHistory();
+  const h = list[idx];
+  if (!h) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '-'; };
+  const dt = h.datetime ? new Date(h.datetime).toLocaleString('ja-JP') : '-';
+  const badge = h._status === 'sent' ? '送信済' : '下書き';
+  document.getElementById('hd_title').textContent =
+    `📋 ${h.datetime ? new Date(h.datetime).toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',weekday:'short'}) : '日付不明'} ／ ${badge}`;
+  set('hd_datetime', dt);
+  set('hd_opTime', [h.startTime, h.endTime].filter(Boolean).join(' 〜 ') || '-');
+  set('hd_subTank', h.subTankLevel);
+  set('hd_hwBoilerKerosene', h.hwBoilerKerosene ? h.hwBoilerKerosene + ' L' : '-');
+  set('hd_hw', (h.hwPumpUnit || '').replace(/;/g,', ') || '-');
+  set('hd_hwPumpPressure', h.hwPumpPressure ? h.hwPumpPressure + ' MPa' : '-');
+  set('hd_hwTankVol', h.hwTankVol ? h.hwTankVol + ' ㎥' : '-');
+  set('hd_hwTankTemp', h.hwTankTemp ? h.hwTankTemp + ' ℃' : '-');
+  set('hd_ac', (h.airCompressorUnit || '').replace(/;/g,', ') || '-');
+  set('hd_headerPressure', h.headerPressure ? h.headerPressure + ' MPa' : '-');
+  set('hd_greyWater', h.greyWaterVol ? h.greyWaterVol + ' ㎥' : '-');
+  set('hd_drinkWater', h.drinkWaterVol ? h.drinkWaterVol + ' ㎥' : '-');
+  set('hd_pwTank', h.pwTankVol ? h.pwTankVol + ' ㎥' : '-');
+  set('hd_cityWaterTemp', h.cityWaterTemp ? h.cityWaterTemp + ' ℃' : '-');
+  set('hd_tk605', h.tk605Vol ? h.tk605Vol + ' ㎥' : '-');
+  set('hd_keroMeter1', h.keroMeter1 ? h.keroMeter1 + ' L' : '-');
+  set('hd_chemTank1', h.chemTank1 ? h.chemTank1 + ' L' : '-');
+  set('hd_keroMeter2', h.keroMeter2 ? h.keroMeter2 + ' L' : '-');
+  set('hd_chemTank2', h.chemTank2 ? h.chemTank2 + ' L' : '-');
+  set('hd_sb', (h.steamBoilerUnit || '').replace(/;/g,', ') || '-');
+  set('hd_steamPressure', h.steamBoilerPressure ? h.steamBoilerPressure + ' MPa' : '-');
+  set('hd_boilerFeedPressure', h.boilerFeedPressure ? h.boilerFeedPressure + ' MPa' : '-');
+  set('hd_drainConductivity', h.drainConductivity || '-');
+  set('hd_drainPumpPressure', h.drainPumpPressure ? h.drainPumpPressure + ' MPa' : '-');
+  set('hd_runTime1', h.runTime1 ? h.runTime1 + ' hr' : '-');
+  set('hd_oilLevel1', h.oilLevel1 || '-');
+  set('hd_runTime2', h.runTime2 ? h.runTime2 + ' hr' : '-');
+  set('hd_oilLevel2', h.oilLevel2 || '-');
+  set('hd_runTime3', h.runTime3 ? h.runTime3 + ' hr' : '-');
+  set('hd_oilLevel3', h.oilLevel3 || '-');
+  set('hd_pwSupplyMeter', h.pwSupplyMeter ? h.pwSupplyMeter + ' L' : '-');
+  const notesGroup = document.getElementById('hd_notesGroup');
+  if (h.notes) { notesGroup.style.display = ''; set('hd_notes', h.notes); }
+  else { notesGroup.style.display = 'none'; }
+  showScreen('scrHistDetail');
 }
 
 // ══════════════════════════════════════════
