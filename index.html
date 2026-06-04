@@ -663,11 +663,10 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
     <div class="complete-icon">📥</div>
     <div class="complete-title">ファイルを保存しました</div>
     <div class="complete-sub">
-      <strong>utility_report.json</strong> をダウンロードしました。<br><br>
       Outlookを開いて<br>
       ① 宛先を入力<br>
-      ② ファイルを添付<br>
-      ③ 送信してください
+      ② 送信してください<br><br>
+      件名・本文は自動入力されています。
     </div>
     <div style="margin-top: 28px; width: 100%; display:flex; flex-direction:column; gap:10px">
       <a id="btnOutlookApp" href="#" class="btn btn-primary btn-full" style="width:100%;text-decoration:none">
@@ -1144,22 +1143,14 @@ function submitReport() {
   const data = getFormData();
   const dateStr = data.datetime ? new Date(data.datetime).toLocaleString('ja-JP') : '日付不明';
 
-  // ① JSONファイルをダウンロード
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'utility_report.json';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
-
-  // ② 完了画面のOutlookリンクを設定
+  // ① Outlookリンクを設定（件名＋本文にJSON埋め込み）
   const subject = encodeURIComponent(CONFIG.SUBJECT_PREFIX);
-  const body = encodeURIComponent(
+  const bodyText =
     `点検日時: ${dateStr}\n\n` +
-    `添付の utility_report.json をご確認ください。`
-  );
+    `===JSON_START===\n` +
+    JSON.stringify(data, null, 2) +
+    `\n===JSON_END===`;
+  const body = encodeURIComponent(bodyText);
   document.getElementById('btnOutlookApp').href = `ms-outlook://compose?subject=${subject}&body=${body}`;
   document.getElementById('btnOutlookWeb').href = `https://outlook.office.com/mail/deeplink/compose?subject=${subject}&body=${body}`;
 

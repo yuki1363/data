@@ -1,5 +1,5 @@
 # Power Automate 設定ガイド
-## メール添付JSON受信 → SharePoint 自動保存フロー
+## メール受信 → SharePoint 自動保存フロー
 ---
 ## 全体フロー
 ```
@@ -7,19 +7,15 @@ GitHub Pages でデータ入力
     ↓
 「✓ メール送信」ボタン押下
     ↓
-utility_report.json を自動ダウンロード
-    ↓
 Outlookが開く（件名・本文自動入力済み）
     ↓
-宛先入力 → utility_report.json を添付 → 送信
+宛先入力 → 送信
     ↓
 指定 Outlook アドレスにメール着信
     ↓
 Power Automate トリガー起動
     ↓
-添付ファイル（utility_report.json）の内容を取得
-    ↓
-JSON を解析
+メール本文から JSON を抽出
     ↓
 SharePoint リストに1件追加
 ```
@@ -45,12 +41,10 @@ Power Automate が監視する Outlook アドレスを決める。
 | フォルダー | 受信トレイ |
 | 宛先 | `utility-report@company.com` |
 | 件名フィルター | `ユーティリティ日報` |
-| **添付ファイルを含める** | **はい** |
+| 添付ファイルを含める | いいえ |
 | 重要度 | 標準 |
 
-> ⚠️ 添付ファイルを含める を **「はい」** にすること（本文方式から変更）
-
-### 2-3. アクション①「変数の初期化」（添付ファイル内容用）
+### 2-3. アクション①「変数の初期化」（JSON文字列抽出用）
 **アクション名:** `変数の初期化 — JSONテキスト`
 | 設定 | 値 |
 |---|---|
@@ -58,25 +52,25 @@ Power Automate が監視する Outlook アドレスを決める。
 | 型 | 文字列 |
 | 値 | （空白） |
 
-### 2-4. アクション②「Apply to each」（添付ファイルをループ）
-**アクション名:** `Apply to each — 添付ファイル`
-| 設定 | 値 |
-|---|---|
-| 以前の手順から出力を選択 | `添付ファイル`（トリガーの動的コンテンツ） |
-
-#### ループ内アクション：条件分岐（ファイル名確認）
-**アクション名:** `条件 — utility_report.json か確認`
-| 設定 | 値 |
-|---|---|
-| 条件式 | `items('Apply_to_each')?['Name']` **次の値と等しい** `utility_report.json` |
-
-**「はいの場合」に追加するアクション:**
-
-**「変数の設定」**
+### 2-4. アクション②「変数の設定」（JSON抽出）
+**アクション名:** `JSON本文を抽出`
 | 設定 | 値 |
 |---|---|
 | 名前 | `jsonText` |
-| 値（式） | `base64ToString(items('Apply_to_each')?['ContentBytes'])` |
+| 値（式） | 以下の式を貼り付け |
+
+```
+substring(
+  body('新しいメールが届いたとき_(V3)')?['body'],
+  add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15),
+  sub(
+    indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_END==='),
+    add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15)
+  )
+)
+```
+
+> ⚠️ `===JSON_START===` は15文字。`add(..., 15)` はこの文字数分オフセットするための値。
 
 ### 2-5. アクション③「JSONの解析」
 **アクション名:** `JSONを解析`
@@ -143,12 +137,12 @@ Power Automate が監視する Outlook アドレスを決める。
 | 温水ボイラー灯油メーター | `hwBoilerKerosene` |
 | 運転開始時間 | `startTime` |
 | 運転終了時間 | `endTime` |
-| 空気圧縮機運転号機 | `airCompressorUnit` |
-| ヘッダー圧力（Mpa) | `headerPressure` |
 | 温水ポンプ運転号機 | `hwPumpUnit` |
 | 温水ポンプ圧力(Mpa) | `hwPumpPressure` |
 | 温水タンク(㎥） | `hwTankVol` |
 | 温水タンク内温度（℃） | `hwTankTemp` |
+| 空気圧縮機運転号機 | `airCompressorUnit` |
+| ヘッダー圧力（Mpa) | `headerPressure` |
 | 中水タンク容量(㎥) | `greyWaterVol` |
 | 飲料水タンク容量（㎥） | `drinkWaterVol` |
 | PWタンク容量(㎥） | `pwTankVol` |
@@ -160,7 +154,6 @@ Power Automate が監視する Outlook アドレスを決める。
 | 薬品タンク2（L) | `chemTank2` |
 | 蒸気ボイラー運転号機 | `steamBoilerUnit` |
 | 蒸気ボイラー圧力（Mpa） | `steamBoilerPressure` |
-| PW補給水メーター（L) | `pwSupplyMeter` |
 | ボイラー給水ポンプ圧力（Mpa） | `boilerFeedPressure` |
 | ドレン電導度 | `drainConductivity` |
 | ドレンポンプ圧力 | `drainPumpPressure` |
@@ -170,6 +163,7 @@ Power Automate が監視する Outlook アドレスを決める。
 | 油面２ | `oilLevel2` |
 | 総運転時間３ | `runTime3` |
 | 油面３ | `oilLevel3` |
+| PW補給水メーター（L) | `pwSupplyMeter` |
 
 ### 2-7. アクション⑤「メールの送信」（任意・完了通知）
 | 設定 | 値 |
@@ -204,9 +198,9 @@ git push origin main
 | # | 確認項目 | 期待結果 |
 |---|---|---|
 | 1 | GitHub Pages の URL にアクセス | アプリが表示される |
-| 2 | 全項目を入力して「✓ メール送信」タップ | `utility_report.json` がダウンロードされる |
-| 3 | Outlookが開く | 件名・本文が自動入力されている |
-| 4 | 宛先入力・ファイル添付・送信 | `utility-report@` に届く |
+| 2 | 全項目を入力して「✓ メール送信」タップ | Outlookが開く |
+| 3 | 件名・本文が自動入力されている | ユーティリティ日報 ＋ JSON本文 |
+| 4 | 宛先入力 → 送信 | `utility-report@` に届く |
 | 5 | Power Automate の実行履歴を確認 | 成功（緑チェック）|
 | 6 | SharePoint リストを確認 | 1件追加されている |
 
@@ -214,13 +208,26 @@ git push origin main
 ## トラブルシューティング
 | 症状 | 原因 | 対処 |
 |---|---|---|
-| Outlookアプリが開かない | ms-outlook:// 未対応 | Outlookウェブ（office.com）が自動で開く |
-| ファイルがダウンロードされない | ブラウザのダウンロードブロック | ブラウザ設定でダウンロードを許可 |
+| Outlookアプリが開かない | ms-outlook:// 未対応 | 「Outlookウェブで開く」ボタンを使う |
 | Power Automate が起動しない | 件名フィルターの不一致 | フィルター文字列 `ユーティリティ日報` を確認 |
-| 添付ファイルが取得できない | トリガーの「添付ファイルを含める」が「いいえ」 | トリガー設定を「はい」に変更 |
-| JSONの解析に失敗 | base64デコードエラー | `base64ToString(items('Apply_to_each')?['ContentBytes'])` の式を再確認 |
+| JSONの解析に失敗 | 本文のHTMLタグ混入 | 式に `replace()` でタグ除去を追加（下記参照） |
 | SharePointへの保存に失敗 | 列名の不一致 | SharePointの列表示名を再確認 |
 | 数値列にエラー | 文字列→数値の型変換 | 式: `float(body('JSONを解析')?['headerPressure'])` |
+
+### HTMLタグ混入対策（メール本文がHTML形式の場合）
+Outlookがメール本文をHTML形式で送信した場合、`<br>` や `&nbsp;` が混入することがある。
+変数設定の式を以下に変更：
+
+```
+trim(substring(
+  replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '),
+  add(indexOf(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '), '===JSON_START==='), 15),
+  sub(
+    indexOf(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '), '===JSON_END==='),
+    add(indexOf(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '), '===JSON_START==='), 15)
+  )
+))
+```
 
 ### 数値列の型変換（SharePoint数値型の場合）
 ```
