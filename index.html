@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ユーティリティ日報</title>
+<style>
+:root {
+  --navy: #1a3a6e;
+  --navy-dark: #0d2147;
+  --navy-light: #e8f0fc;
+  --green: #1a7e4a;
+  --green-light: #e8f8f0;
+  --amber: #f59e0b;
+  --amber-light: #fff3e0;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-800: #1e293b;
+  --white: #ffffff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-800);
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── APP SHELL ── */
+#app { max-width: 430px; margin: 0 auto; min-height: 100vh; background: var(--white); position: relative; }
+
+/* ── HEADER ── */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy);
+  padding: 12px 16px;
+  padding-top: calc(12px + env(safe-area-inset-top));
+  display: flex; align-items: center; gap: 10px;
+}
+.header-back {
+  background: none; border: none; color: rgba(255,255,255,0.75);
+  font-size: 22px; cursor: pointer; padding: 4px; line-height: 1;
+  display: flex; align-items: center;
+}
+.header-title { color: var(--white); font-size: 15px; font-weight: 600; flex: 1; }
+.header-step {
+  background: rgba(255,255,255,0.18);
+  color: var(--white); font-size: 11px;
+  padding: 3px 9px; border-radius: 20px;
+}
+
+/* ── PROGRESS ── */
+.progress-track { height: 3px; background: rgba(255,255,255,0.2); }
+.progress-fill { height: 100%; background: #60a5fa; transition: width .3s ease; }
+
+/* ── SCREENS ── */
+.screen { display: none; padding: 0 0 100px; }
+.screen.active { display: block; }
+
+/* ── HOME SCREEN ── */
+.home-hero {
+  background: linear-gradient(145deg, var(--navy) 0%, var(--navy-dark) 100%);
+  padding: 28px 20px 32px;
+}
+.home-date { color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 4px; }
+.home-title { color: var(--white); font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+.home-subtitle { color: rgba(255,255,255,0.55); font-size: 12px; margin-top: 4px; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 14px; padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.status-pill.submitted { background: rgba(26,126,74,0.3); color: #6ee7a8; }
+.status-pill.pending { background: rgba(220,38,38,0.25); color: #fca5a5; }
+
+.home-menu { padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; }
+.menu-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: all .15s;
+  box-shadow: var(--shadow);
+}
+.menu-card:active { transform: scale(0.98); background: var(--gray-50); }
+.menu-card.primary { background: var(--navy); border-color: var(--navy); }
+.menu-card.primary:active { background: var(--navy-dark); }
+.menu-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.menu-icon.blue { background: var(--navy-light); }
+.menu-icon.white { background: rgba(255,255,255,0.15); }
+.menu-icon.gray { background: var(--gray-100); }
+.menu-text .mt { font-size: 14px; font-weight: 600; }
+.menu-text .ms { font-size: 11px; margin-top: 2px; }
+.menu-card.primary .mt, .menu-card.primary .ms { color: var(--white); }
+.menu-card.primary .ms { opacity: .65; }
+.menu-card .arrow { margin-left: auto; color: var(--gray-400); font-size: 18px; }
+.menu-card.primary .arrow { color: rgba(255,255,255,0.5); }
+
+.draft-info {
+  margin: 0 16px 4px;
+  background: var(--amber-light);
+  border: 1px solid var(--amber);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px; color: #92400e;
+  display: flex; align-items: center; gap: 8px;
+}
+.draft-info.hidden { display: none; }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-size: 11px; font-weight: 700; color: var(--navy);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 20px 16px 8px;
+}
+
+/* ── FORM GROUP ── */
+.form-group { padding: 0 16px 14px; }
+.form-label {
+  font-size: 12px; color: var(--gray-600); font-weight: 500;
+  margin-bottom: 6px; display: block;
+}
+.form-input {
+  width: 100%; height: 48px;
+  border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+  padding: 0 12px; font-size: 15px; color: var(--gray-800);
+  background: var(--white); appearance: none;
+  font-family: inherit; transition: border-color .15s;
+  outline: none;
+}
+.form-input:focus { border-color: var(--navy); }
+.form-input::placeholder { color: var(--gray-400); font-size: 13px; }
+
+textarea.form-input {
+  height: 80px; padding: 10px 12px;
+  resize: none; line-height: 1.5;
+}
+select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* 横並び */
+.form-row { display: flex; gap: 10px; padding: 0 16px 14px; }
+.form-row .form-group { padding: 0; flex: 1; }
+
+/* ── CHIP BUTTONS ── */
+.chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip-btn {
+  flex: 1; min-width: 0;
+  height: 44px; border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm); background: var(--white);
+  font-size: 13px; font-weight: 600; color: var(--gray-600);
+  cursor: pointer; transition: all .15s; font-family: inherit;
+}
+.chip-btn.active {
+  background: var(--navy); border-color: var(--navy); color: var(--white);
+}
+.chip-btn:active { transform: scale(0.96); }
+
+/* 選択結果バッジ */
+.chip-result {
+  margin-top: 7px; padding: 7px 12px; border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 500; border: 1px solid;
+}
+.chip-result.ok { background: var(--navy-light); color: var(--navy); border-color: #93b4e8; }
+.chip-result.warn { background: var(--amber-light); color: #92400e; border-color: var(--amber); }
+
+/* ── UNIT CARD ── */
+.unit-card {
+  margin: 0 16px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.unit-card-header {
+  background: linear-gradient(90deg, var(--navy-light), #f0f5ff);
+  padding: 8px 14px;
+  font-size: 12px; font-weight: 700; color: var(--navy);
+}
+.unit-card-body { padding: 12px 14px; display: flex; gap: 10px; }
+.unit-card-body .form-group { padding: 0; flex: 1; }
+
+/* ── CONFIRM SCREEN ── */
+.confirm-group {
+  margin: 0 16px 12px;
+  background: var(--gray-50); border: 1px solid var(--gray-200);
+  border-radius: var(--radius); overflow: hidden;
+}
+.confirm-group-title {
+  background: linear-gradient(90deg, var(--navy-light), #f0f5ff);
+  padding: 8px 14px;
+  font-size: 11px; font-weight: 700; color: var(--navy);
+  border-bottom: 1px solid var(--gray-200);
+}
+.confirm-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 14px; border-bottom: 1px solid var(--gray-100);
+}
+.confirm-row:last-child { border-bottom: none; }
+.confirm-key { font-size: 11px; color: var(--gray-600); }
+.confirm-val { font-size: 12px; font-weight: 600; color: var(--gray-800); text-align: right; max-width: 60%; }
+
+/* ── COMPLETE SCREEN ── */
+.complete-body {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 24px;
+  text-align: center;
+}
+.complete-icon { font-size: 64px; margin-bottom: 20px; }
+.complete-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+.complete-sub { font-size: 13px; color: var(--gray-600); line-height: 1.7; }
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--gray-200);
+  display: flex; gap: 10px; z-index: 50;
+}
+.btn {
+  height: 50px; border-radius: var(--radius);
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none; font-family: inherit;
+  transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-secondary {
+  flex: 1; background: var(--gray-100); color: var(--gray-600);
+  border: 1.5px solid var(--gray-200);
+}
+.btn-primary { flex: 2; background: var(--navy); color: var(--white); }
+.btn-success { flex: 1; background: var(--green); color: var(--white); }
+.btn-draft { flex: 1; background: var(--amber-light); color: #92400e; border: 1.5px solid var(--amber); }
+.btn-full { flex: 1; }
+.btn-wide { flex: 3; }
+
+/* ── HISTORY ── */
+.history-search { padding: 12px 16px 4px; }
+.hist-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: background .1s;
+}
+.hist-item:active { background: var(--gray-50); }
+.hist-date { font-size: 14px; font-weight: 600; }
+.hist-meta { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+.hist-badge {
+  margin-left: auto; font-size: 10px; padding: 3px 8px;
+  border-radius: 20px; font-weight: 600; white-space: nowrap;
+}
+.hist-badge.sent { background: var(--green-light); color: var(--green); }
+.hist-badge.draft { background: var(--amber-light); color: #92400e; }
+.hist-empty { text-align: center; padding: 60px 20px; color: var(--gray-400); font-size: 13px; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--gray-100); margin: 4px 0; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--gray-800); color: var(--white);
+  padding: 10px 20px; border-radius: 20px; font-size: 13px;
+  opacity: 0; transition: all .3s; z-index: 999; white-space: nowrap;
+  pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ HEADER ══ -->
+<div class="app-header" id="appHeader">
+  <button class="header-back" id="btnHeaderBack" style="display:none">‹</button>
+  <span class="header-title" id="headerTitle">ユーティリティ日報</span>
+  <span class="header-step" id="headerStep" style="display:none"></span>
+</div>
+<div class="progress-track" id="progressTrack" style="display:none">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<!-- ══ SCREEN: HOME ══ -->
+<div class="screen active" id="scrHome">
+  <div class="home-hero">
+    <div class="home-date" id="homeDate"></div>
+    <div class="home-title">ユーティリティ日報</div>
+    <div class="home-subtitle">掛川工場 保全技術課</div>
+    <div class="status-pill pending" id="todayStatus">● 本日未入力</div>
+  </div>
+  <div class="home-menu">
+    <div class="draft-info hidden" id="draftInfo">
+      💾 下書きが保存されています。「入力を再開」から続きを入力できます。
+    </div>
+    <div class="menu-card primary" onclick="startEntry()">
+      <div class="menu-icon white">📋</div>
+      <div class="menu-text">
+        <div class="mt">本日分を入力する</div>
+        <div class="ms">新規日報を作成</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+    <div class="menu-card" id="btnResumeDraft" style="display:none" onclick="resumeDraft()">
+      <div class="menu-icon" style="background:#fff3e0">💾</div>
+      <div class="menu-text">
+        <div class="mt">入力を再開</div>
+        <div class="ms" style="color:#92400e">下書きの続きから入力</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+    <div class="menu-card" onclick="showScreen('scrHistory')">
+      <div class="menu-icon gray">📂</div>
+      <div class="menu-text">
+        <div class="mt">過去データを見る</div>
+        <div class="ms" style="color:var(--gray-400)">送信済み・下書き履歴</div>
+      </div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: INPUT1 — 灯油・ボイラー・運転時間 ══ -->
+<div class="screen" id="scrInput1">
+  <div class="section-title">📅 基本情報</div>
+  <div class="form-group">
+    <label class="form-label">点検日時</label>
+    <input type="datetime-local" class="form-input" id="f_datetime">
+  </div>
+
+  <div class="section-title">🛢 灯油系統</div>
+  <div class="form-group">
+    <label class="form-label">灯油サブタンクレベル（液面）</label>
+    <div class="chip-group" id="chips_subTank">
+      <button class="chip-btn" data-val="上" onclick="selectChip('subTank','上',this)">上</button>
+      <button class="chip-btn active" data-val="中" onclick="selectChip('subTank','中',this)">中</button>
+      <button class="chip-btn" data-val="下" onclick="selectChip('subTank','下',this)">下</button>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">温水ボイラー灯油メーター (L)</label>
+    <input type="number" class="form-input" id="f_hwBoilerKerosene" placeholder="例: 1240" step="0.1">
+  </div>
+
+  <div class="section-title">⏱ 運転時間</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">運転開始時刻</label>
+      <input type="time" class="form-input" id="f_startTime">
+    </div>
+    <div class="form-group">
+      <label class="form-label">運転終了時刻</label>
+      <input type="time" class="form-input" id="f_endTime">
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-draft" onclick="saveDraft()">💾 下書き</button>
+    <button class="btn btn-primary btn-wide" onclick="goNext(1)">次へ →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: INPUT2 — 圧縮機・温水ポンプ ══ -->
+<div class="screen" id="scrInput2">
+  <div class="section-title">🔧 空気圧縮機</div>
+  <div class="form-group">
+    <label class="form-label">運転号機（複数選択可）</label>
+    <div class="chip-group">
+      <button class="chip-btn" onclick="toggleMultiChip('ac','1号機',this)">1号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('ac','2号機',this)">2号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('ac','3号機',this)">3号機</button>
+    </div>
+    <div class="chip-result warn" id="result_ac">⚠ 号機を1つ以上選択してください</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">ヘッダー圧力 (MPa)</label>
+    <input type="number" class="form-input" id="f_headerPressure" placeholder="例: 0.65" step="0.01">
+  </div>
+
+  <div class="section-title">💧 温水ポンプ</div>
+  <div class="form-group">
+    <label class="form-label">運転号機（複数選択可）</label>
+    <div class="chip-group">
+      <button class="chip-btn" onclick="toggleMultiChip('hw','1号機',this)">1号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('hw','2号機',this)">2号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('hw','3号機',this)">3号機</button>
+    </div>
+    <div class="chip-result warn" id="result_hw">⚠ 号機を1つ以上選択してください</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">温水ポンプ圧力 (MPa)</label>
+    <input type="number" class="form-input" id="f_hwPumpPressure" placeholder="例: 0.42" step="0.01">
+  </div>
+  <div class="form-group">
+    <label class="form-label">温水タンク容量 (㎥)</label>
+    <input type="number" class="form-input" id="f_hwTankVol" placeholder="例: 5.2" step="0.01">
+  </div>
+  <div class="form-group">
+    <label class="form-label">温水タンク内温度 (℃)</label>
+    <input type="number" class="form-input" id="f_hwTankTemp" placeholder="例: 65.0" step="0.1">
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="goBack(2)">← 戻る</button>
+    <button class="btn btn-draft" onclick="saveDraft()">💾</button>
+    <button class="btn btn-primary btn-wide" onclick="goNext(2)">次へ →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: INPUT3 — 各種タンク ══ -->
+<div class="screen" id="scrInput3">
+  <div class="section-title">🚰 水系タンク</div>
+  <div class="form-group">
+    <label class="form-label">中水タンク容量 (㎥)</label>
+    <input type="number" class="form-input" id="f_greyWaterVol" placeholder="例: 12.5" step="0.01">
+  </div>
+  <div class="form-group">
+    <label class="form-label">飲料水タンク容量 (㎥)</label>
+    <input type="number" class="form-input" id="f_drinkWaterVol" placeholder="例: 8.0" step="0.01">
+  </div>
+  <div class="form-group">
+    <label class="form-label">PWタンク容量 (㎥)</label>
+    <input type="number" class="form-input" id="f_pwTankVol" placeholder="例: 3.5" step="0.01">
+  </div>
+  <div class="form-group">
+    <label class="form-label">市水温度 (℃)</label>
+    <input type="number" class="form-input" id="f_cityWaterTemp" placeholder="例: 18.0" step="0.1">
+  </div>
+
+  <div class="section-title">🛢 灯油・薬品タンク</div>
+  <div class="form-group">
+    <label class="form-label">灯油タンク容量 TK605 (㎥)</label>
+    <input type="number" class="form-input" id="f_tk605Vol" placeholder="例: 9.8" step="0.01">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">灯油メーター1 (L)</label>
+      <input type="number" class="form-input" id="f_keroMeter1" placeholder="例: 540" step="1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">薬品タンク1 (L)</label>
+      <input type="number" class="form-input" id="f_chemTank1" placeholder="例: 120" step="0.1">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">灯油メーター2 (L)</label>
+      <input type="number" class="form-input" id="f_keroMeter2" placeholder="例: 320" step="1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">薬品タンク2 (L)</label>
+      <input type="number" class="form-input" id="f_chemTank2" placeholder="例: 85" step="0.1">
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="goBack(3)">← 戻る</button>
+    <button class="btn btn-draft" onclick="saveDraft()">💾</button>
+    <button class="btn btn-primary btn-wide" onclick="goNext(3)">次へ →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: INPUT4 — 蒸気ボイラー・ドレン ══ -->
+<div class="screen" id="scrInput4">
+  <div class="section-title">🔥 蒸気ボイラー</div>
+  <div class="form-group">
+    <label class="form-label">運転号機（複数選択可）</label>
+    <div class="chip-group">
+      <button class="chip-btn" onclick="toggleMultiChip('sb','1号機',this)">1号機</button>
+      <button class="chip-btn" onclick="toggleMultiChip('sb','2号機',this)">2号機</button>
+    </div>
+    <div class="chip-result warn" id="result_sb">⚠ 号機を1つ以上選択してください</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">蒸気ボイラー圧力 (MPa)</label>
+    <input type="number" class="form-input" id="f_steamBoilerPressure" placeholder="例: 0.78" step="0.01">
+  </div>
+  <div class="form-group">
+    <label class="form-label">PW補給水メーター (L)</label>
+    <input type="number" class="form-input" id="f_pwSupplyMeter" placeholder="例: 450" step="1">
+  </div>
+  <div class="form-group">
+    <label class="form-label">ボイラー給水ポンプ圧力 (MPa)</label>
+    <input type="number" class="form-input" id="f_boilerFeedPressure" placeholder="例: 0.55" step="0.01">
+  </div>
+
+  <div class="section-title">💧 ドレン</div>
+  <div class="form-group">
+    <label class="form-label">ドレン電導度 (μS/cm)</label>
+    <input type="number" class="form-input" id="f_drainConductivity" placeholder="例: 120" step="1">
+  </div>
+  <div class="form-group">
+    <label class="form-label">ドレンポンプ圧力 (MPa)</label>
+    <input type="number" class="form-input" id="f_drainPumpPressure" placeholder="例: 0.30" step="0.01">
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="goBack(4)">← 戻る</button>
+    <button class="btn btn-draft" onclick="saveDraft()">💾</button>
+    <button class="btn btn-primary btn-wide" onclick="goNext(4)">次へ →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: INPUT5 — 運転時間・油面確認 ══ -->
+<div class="screen" id="scrInput5">
+  <div class="section-title">⚙️ 号機別 運転時間・油面確認</div>
+
+  <div class="unit-card">
+    <div class="unit-card-header">1号機</div>
+    <div class="unit-card-body">
+      <div class="form-group">
+        <label class="form-label">総運転時間 (hr)</label>
+        <input type="number" class="form-input" id="f_runTime1" placeholder="例: 8.5" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">油面確認</label>
+        <select class="form-input" id="f_oilLevel1">
+          <option value="">選択</option>
+          <option>OK</option>
+          <option>要補充</option>
+          <option>異常</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="unit-card">
+    <div class="unit-card-header">2号機</div>
+    <div class="unit-card-body">
+      <div class="form-group">
+        <label class="form-label">総運転時間 (hr)</label>
+        <input type="number" class="form-input" id="f_runTime2" placeholder="例: 7.0" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">油面確認</label>
+        <select class="form-input" id="f_oilLevel2">
+          <option value="">選択</option>
+          <option>OK</option>
+          <option>要補充</option>
+          <option>異常</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="unit-card">
+    <div class="unit-card-header">3号機</div>
+    <div class="unit-card-body">
+      <div class="form-group">
+        <label class="form-label">総運転時間 (hr)</label>
+        <input type="number" class="form-input" id="f_runTime3" placeholder="例: 0.0" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">油面確認</label>
+        <select class="form-input" id="f_oilLevel3">
+          <option value="">選択</option>
+          <option>OK</option>
+          <option>要補充</option>
+          <option>異常</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📝 特記事項・備考</div>
+  <div class="form-group">
+    <textarea class="form-input" id="f_notes" placeholder="異常・特記事項があれば入力してください"></textarea>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="goBack(5)">← 戻る</button>
+    <button class="btn btn-draft" onclick="saveDraft()">💾</button>
+    <button class="btn btn-primary btn-wide" onclick="goNext(5)">確認画面へ →</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: CONFIRM ══ -->
+<div class="screen" id="scrConfirm">
+  <div class="section-title">📋 入力内容の確認</div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">基本情報</div>
+    <div class="confirm-row"><span class="confirm-key">点検日時</span><span class="confirm-val" id="cv_datetime">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">運転時間</span><span class="confirm-val" id="cv_opTime">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">灯油・ボイラー</div>
+    <div class="confirm-row"><span class="confirm-key">サブタンクレベル</span><span class="confirm-val" id="cv_subTank">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">灯油メーター</span><span class="confirm-val" id="cv_hwBoilerKerosene">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">圧縮機・温水ポンプ</div>
+    <div class="confirm-row"><span class="confirm-key">圧縮機号機</span><span class="confirm-val" id="cv_ac">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ヘッダー圧力</span><span class="confirm-val" id="cv_headerPressure">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">温水ポンプ号機</span><span class="confirm-val" id="cv_hw">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">温水ポンプ圧力</span><span class="confirm-val" id="cv_hwPumpPressure">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">各種タンク</div>
+    <div class="confirm-row"><span class="confirm-key">中水タンク</span><span class="confirm-val" id="cv_greyWater">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">飲料水タンク</span><span class="confirm-val" id="cv_drinkWater">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">PWタンク</span><span class="confirm-val" id="cv_pwTank">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">灯油TK605</span><span class="confirm-val" id="cv_tk605">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">蒸気ボイラー・ドレン</div>
+    <div class="confirm-row"><span class="confirm-key">蒸気ボイラー号機</span><span class="confirm-val" id="cv_sb">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">蒸気ボイラー圧力</span><span class="confirm-val" id="cv_steamPressure">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">ドレン電導度</span><span class="confirm-val" id="cv_drainCond">-</span></div>
+  </div>
+
+  <div class="confirm-group">
+    <div class="confirm-group-title">運転時間・油面確認</div>
+    <div class="confirm-row"><span class="confirm-key">1号機</span><span class="confirm-val" id="cv_unit1">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">2号機</span><span class="confirm-val" id="cv_unit2">-</span></div>
+    <div class="confirm-row"><span class="confirm-key">3号機</span><span class="confirm-val" id="cv_unit3">-</span></div>
+  </div>
+
+  <div id="cv_notesGroup" class="confirm-group" style="display:none">
+    <div class="confirm-group-title">特記事項</div>
+    <div class="confirm-row"><span class="confirm-val" id="cv_notes" style="text-align:left;max-width:100%">-</span></div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-secondary" onclick="goBack(6)">← 修正</button>
+    <button class="btn btn-success btn-wide" onclick="submitReport()">✓ メール送信</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: COMPLETE ══ -->
+<div class="screen" id="scrComplete">
+  <div class="complete-body">
+    <div class="complete-icon">✅</div>
+    <div class="complete-title">送信完了！</div>
+    <div class="complete-sub" id="completeSub">
+      メールアプリが開きます。<br>送信ボタンを押して完了してください。<br><br>
+      送信後、SharePointに自動で保存されます。
+    </div>
+    <div style="margin-top: 32px; width: 100%;">
+      <button class="btn btn-primary btn-full" style="width:100%;margin-bottom:10px" onclick="showScreen('scrHome')">ホームへ戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: HISTORY ══ -->
+<div class="screen" id="scrHistory">
+  <div class="history-search">
+    <input type="text" class="form-input" id="histSearch" placeholder="🔍 日付で絞り込み（例: 2026/06）" oninput="renderHistory()">
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+</div><!-- /#app -->
+
+<script>
+// ══════════════════════════════════════════
+// 設定 — ここを変更してください
+// ══════════════════════════════════════════
+const CONFIG = {
+  // Power Automate に転送するメールアドレス（Outlookアドレス）
+  SEND_TO: 'utility-report@yourdomain.com',
+  // メール件名のプレフィックス
+  SUBJECT_PREFIX: 'ユーティリティ日報',
+};
+
+// ══════════════════════════════════════════
+// 状態管理
+// ══════════════════════════════════════════
+const SCREENS = ['scrHome','scrInput1','scrInput2','scrInput3','scrInput4','scrInput5','scrConfirm','scrComplete','scrHistory'];
+const TOTAL_STEPS = 5;
+let currentScreen = 'scrHome';
+
+// 複数選択チップの選択状態
+const multiChips = { ac: [], hw: [], sb: [] };
+
+// ══════════════════════════════════════════
+// 画面制御
+// ══════════════════════════════════════════
+function showScreen(id) {
+  SCREENS.forEach(s => {
+    document.getElementById(s).classList.toggle('active', s === id);
+  });
+  currentScreen = id;
+  updateHeader(id);
+  window.scrollTo(0, 0);
+}
+
+function updateHeader(id) {
+  const titleMap = {
+    scrHome: 'ユーティリティ日報',
+    scrInput1: '灯油・ボイラー・運転時間',
+    scrInput2: '圧縮機・温水ポンプ',
+    scrInput3: '各種タンク',
+    scrInput4: '蒸気ボイラー・ドレン',
+    scrInput5: '運転時間・油面確認',
+    scrConfirm: '送信前確認',
+    scrComplete: '送信完了',
+    scrHistory: '過去データ履歴',
+  };
+  const stepMap = { scrInput1:1, scrInput2:2, scrInput3:3, scrInput4:4, scrInput5:5 };
+
+  document.getElementById('headerTitle').textContent = titleMap[id] || '';
+  const back = document.getElementById('btnHeaderBack');
+  const step = document.getElementById('headerStep');
+  const prog = document.getElementById('progressTrack');
+  const fill = document.getElementById('progressFill');
+
+  if (id === 'scrHome') {
+    back.style.display = 'none';
+    step.style.display = 'none';
+    prog.style.display = 'none';
+  } else {
+    back.style.display = 'flex';
+    const s = stepMap[id];
+    if (s) {
+      step.style.display = '';
+      step.textContent = `${s} / ${TOTAL_STEPS}`;
+      prog.style.display = '';
+      fill.style.width = `${(s / TOTAL_STEPS) * 100}%`;
+    } else {
+      step.style.display = 'none';
+      prog.style.display = 'none';
+    }
+  }
+}
+
+document.getElementById('btnHeaderBack').onclick = () => {
+  const backMap = {
+    scrInput1: 'scrHome', scrInput2: 'scrInput1', scrInput3: 'scrInput2',
+    scrInput4: 'scrInput3', scrInput5: 'scrInput4',
+    scrConfirm: 'scrInput5', scrHistory: 'scrHome',
+  };
+  if (backMap[currentScreen]) showScreen(backMap[currentScreen]);
+};
+
+// ══════════════════════════════════════════
+// ナビゲーション
+// ══════════════════════════════════════════
+const screenOrder = ['scrInput1','scrInput2','scrInput3','scrInput4','scrInput5','scrConfirm'];
+
+function goNext(step) {
+  if (step === 2) {
+    if (!validateMultiChip('ac')) { showToast('⚠ 空気圧縮機の号機を選択してください'); return; }
+    if (!validateMultiChip('hw')) { showToast('⚠ 温水ポンプの号機を選択してください'); return; }
+  }
+  if (step === 4) {
+    if (!validateMultiChip('sb')) { showToast('⚠ 蒸気ボイラーの号機を選択してください'); return; }
+  }
+  if (step === 5) {
+    buildConfirm();
+  }
+  showScreen(screenOrder[step]);
+}
+
+function goBack(step) {
+  showScreen(screenOrder[step - 2]);
+}
+
+// ══════════════════════════════════════════
+// チップ選択
+// ══════════════════════════════════════════
+function selectChip(group, val, el) {
+  document.querySelectorAll(`#chips_${group} .chip-btn`).forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleMultiChip(group, val, el) {
+  el.classList.toggle('active');
+  const idx = multiChips[group].indexOf(val);
+  if (idx >= 0) multiChips[group].splice(idx, 1);
+  else multiChips[group].push(val);
+  updateChipResult(group);
+}
+
+function validateMultiChip(group) { return multiChips[group].length > 0; }
+
+function updateChipResult(group) {
+  const el = document.getElementById(`result_${group}`);
+  if (!el) return;
+  if (multiChips[group].length > 0) {
+    el.textContent = '✓ 選択中: ' + multiChips[group].join('、');
+    el.className = 'chip-result ok';
+  } else {
+    el.textContent = '⚠ 号機を1つ以上選択してください';
+    el.className = 'chip-result warn';
+  }
+}
+
+// ══════════════════════════════════════════
+// フォーム値取得
+// ══════════════════════════════════════════
+function getFormData() {
+  const g = id => (document.getElementById(id) || {}).value || '';
+  const subTankActive = document.querySelector('#chips_subTank .chip-btn.active');
+  return {
+    datetime: g('f_datetime'),
+    subTankLevel: subTankActive ? subTankActive.dataset.val : '中',
+    hwBoilerKerosene: g('f_hwBoilerKerosene'),
+    startTime: g('f_startTime'),
+    endTime: g('f_endTime'),
+    airCompressorUnit: multiChips.ac.join(';'),
+    headerPressure: g('f_headerPressure'),
+    hwPumpUnit: multiChips.hw.join(';'),
+    hwPumpPressure: g('f_hwPumpPressure'),
+    hwTankVol: g('f_hwTankVol'),
+    hwTankTemp: g('f_hwTankTemp'),
+    greyWaterVol: g('f_greyWaterVol'),
+    drinkWaterVol: g('f_drinkWaterVol'),
+    pwTankVol: g('f_pwTankVol'),
+    cityWaterTemp: g('f_cityWaterTemp'),
+    tk605Vol: g('f_tk605Vol'),
+    keroMeter1: g('f_keroMeter1'),
+    chemTank1: g('f_chemTank1'),
+    keroMeter2: g('f_keroMeter2'),
+    chemTank2: g('f_chemTank2'),
+    steamBoilerUnit: multiChips.sb.join(';'),
+    steamBoilerPressure: g('f_steamBoilerPressure'),
+    pwSupplyMeter: g('f_pwSupplyMeter'),
+    boilerFeedPressure: g('f_boilerFeedPressure'),
+    drainConductivity: g('f_drainConductivity'),
+    drainPumpPressure: g('f_drainPumpPressure'),
+    runTime1: g('f_runTime1'),
+    oilLevel1: g('f_oilLevel1'),
+    runTime2: g('f_runTime2'),
+    oilLevel2: g('f_oilLevel2'),
+    runTime3: g('f_runTime3'),
+    oilLevel3: g('f_oilLevel3'),
+    notes: g('f_notes'),
+  };
+}
+
+function setFormData(data) {
+  if (!data) return;
+  const s = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  s('f_datetime', data.datetime);
+  s('f_hwBoilerKerosene', data.hwBoilerKerosene);
+  s('f_startTime', data.startTime);
+  s('f_endTime', data.endTime);
+  s('f_headerPressure', data.headerPressure);
+  s('f_hwPumpPressure', data.hwPumpPressure);
+  s('f_hwTankVol', data.hwTankVol);
+  s('f_hwTankTemp', data.hwTankTemp);
+  s('f_greyWaterVol', data.greyWaterVol);
+  s('f_drinkWaterVol', data.drinkWaterVol);
+  s('f_pwTankVol', data.pwTankVol);
+  s('f_cityWaterTemp', data.cityWaterTemp);
+  s('f_tk605Vol', data.tk605Vol);
+  s('f_keroMeter1', data.keroMeter1);
+  s('f_chemTank1', data.chemTank1);
+  s('f_keroMeter2', data.keroMeter2);
+  s('f_chemTank2', data.chemTank2);
+  s('f_steamBoilerPressure', data.steamBoilerPressure);
+  s('f_pwSupplyMeter', data.pwSupplyMeter);
+  s('f_boilerFeedPressure', data.boilerFeedPressure);
+  s('f_drainConductivity', data.drainConductivity);
+  s('f_drainPumpPressure', data.drainPumpPressure);
+  s('f_runTime1', data.runTime1);
+  s('f_oilLevel1', data.oilLevel1);
+  s('f_runTime2', data.runTime2);
+  s('f_oilLevel2', data.oilLevel2);
+  s('f_runTime3', data.runTime3);
+  s('f_oilLevel3', data.oilLevel3);
+  s('f_notes', data.notes);
+
+  // チップ復元
+  ['subTank'].forEach(g => {
+    const val = data.subTankLevel;
+    document.querySelectorAll(`#chips_${g} .chip-btn`).forEach(b => {
+      b.classList.toggle('active', b.dataset.val === val);
+    });
+  });
+  // 複数選択チップ復元
+  ['ac','hw','sb'].forEach(g => {
+    const key = {ac:'airCompressorUnit', hw:'hwPumpUnit', sb:'steamBoilerUnit'}[g];
+    multiChips[g] = (data[key] || '').split(';').filter(Boolean);
+    const labels = multiChips[g];
+    document.querySelectorAll(`#scrInput${g==='sb'?4:2} .chip-group`).forEach((grp, i) => {
+      if ((g==='ac'&&i===0)||(g==='hw'&&i===1)||(g==='sb'&&i===0)) {
+        grp.querySelectorAll('.chip-btn').forEach(b => {
+          b.classList.toggle('active', labels.includes(b.textContent));
+        });
+      }
+    });
+    updateChipResult(g);
+  });
+}
+
+// ══════════════════════════════════════════
+// 下書き保存・読込
+// ══════════════════════════════════════════
+const DRAFT_KEY = 'utilityReport_draft';
+const HISTORY_KEY = 'utilityReport_history';
+
+function saveDraft() {
+  const data = getFormData();
+  data._savedAt = new Date().toISOString();
+  data._status = 'draft';
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+  showToast('💾 下書きを保存しました');
+  updateHomeState();
+}
+
+function loadDraft() {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch { return null; }
+}
+
+function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
+
+function updateHomeState() {
+  const draft = loadDraft();
+  const history = loadHistory();
+  const today = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'/');
+  const todaySent = history.some(h => h._status === 'sent' && h.datetime && h.datetime.startsWith(today.replace(/\//g,'-').slice(0,10)));
+
+  // 今日の送信済み確認
+  const statusEl = document.getElementById('todayStatus');
+  if (todaySent) {
+    statusEl.textContent = '✅ 本日入力済み';
+    statusEl.className = 'status-pill submitted';
+  } else {
+    statusEl.textContent = '● 本日未入力';
+    statusEl.className = 'status-pill pending';
+  }
+
+  // 下書きボタン表示
+  const resumeBtn = document.getElementById('btnResumeDraft');
+  if (draft) {
+    resumeBtn.style.display = 'flex';
+    document.getElementById('draftInfo').classList.remove('hidden');
+  } else {
+    resumeBtn.style.display = 'none';
+    document.getElementById('draftInfo').classList.add('hidden');
+  }
+}
+
+function startEntry() {
+  clearDraft();
+  // フォームリセット
+  document.querySelectorAll('.form-input').forEach(el => el.value = '');
+  multiChips.ac = []; multiChips.hw = []; multiChips.sb = [];
+  ['ac','hw','sb'].forEach(updateChipResult);
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#chips_subTank [data-val="中"]').classList.add('active');
+  // 日時を今にセット
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('f_datetime').value = now.toISOString().slice(0,16);
+  showScreen('scrInput1');
+}
+
+function resumeDraft() {
+  const draft = loadDraft();
+  if (draft) setFormData(draft);
+  showScreen('scrInput1');
+}
+
+// ══════════════════════════════════════════
+// 確認画面構築
+// ══════════════════════════════════════════
+function buildConfirm() {
+  const d = getFormData();
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '-'; };
+  const dt = d.datetime ? new Date(d.datetime).toLocaleString('ja-JP') : '-';
+  set('cv_datetime', dt);
+  set('cv_opTime', [d.startTime, d.endTime].filter(Boolean).join(' 〜 ') || '-');
+  set('cv_subTank', d.subTankLevel);
+  set('cv_hwBoilerKerosene', d.hwBoilerKerosene ? d.hwBoilerKerosene + ' L' : '-');
+  set('cv_ac', d.airCompressorUnit.replace(/;/g,', ') || '-');
+  set('cv_headerPressure', d.headerPressure ? d.headerPressure + ' MPa' : '-');
+  set('cv_hw', d.hwPumpUnit.replace(/;/g,', ') || '-');
+  set('cv_hwPumpPressure', d.hwPumpPressure ? d.hwPumpPressure + ' MPa' : '-');
+  set('cv_greyWater', d.greyWaterVol ? d.greyWaterVol + ' ㎥' : '-');
+  set('cv_drinkWater', d.drinkWaterVol ? d.drinkWaterVol + ' ㎥' : '-');
+  set('cv_pwTank', d.pwTankVol ? d.pwTankVol + ' ㎥' : '-');
+  set('cv_tk605', d.tk605Vol ? d.tk605Vol + ' ㎥' : '-');
+  set('cv_sb', d.steamBoilerUnit.replace(/;/g,', ') || '-');
+  set('cv_steamPressure', d.steamBoilerPressure ? d.steamBoilerPressure + ' MPa' : '-');
+  set('cv_drainCond', d.drainConductivity ? d.drainConductivity + ' μS/cm' : '-');
+  set('cv_unit1', [d.runTime1 ? d.runTime1+' hr' : '-', d.oilLevel1||'-'].join(' / '));
+  set('cv_unit2', [d.runTime2 ? d.runTime2+' hr' : '-', d.oilLevel2||'-'].join(' / '));
+  set('cv_unit3', [d.runTime3 ? d.runTime3+' hr' : '-', d.oilLevel3||'-'].join(' / '));
+  const notesGroup = document.getElementById('cv_notesGroup');
+  if (d.notes) {
+    notesGroup.style.display = '';
+    set('cv_notes', d.notes);
+  } else {
+    notesGroup.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════
+// 送信処理（mailto）
+// ══════════════════════════════════════════
+function submitReport() {
+  const data = getFormData();
+  const dateStr = data.datetime ? new Date(data.datetime).toLocaleDateString('ja-JP') : '日付不明';
+  const subject = encodeURIComponent(`${CONFIG.SUBJECT_PREFIX} ${dateStr}`);
+
+  // Power Automate が解析しやすいようにJSON本文を組み立て
+  const body = encodeURIComponent(
+    `【ユーティリティ日報 自動送信】\n\n` +
+    `このメールは自動生成されました。本文のJSONをPower Automateで処理してください。\n\n` +
+    `===JSON_START===\n` +
+    JSON.stringify(data, null, 2) +
+    `\n===JSON_END===`
+  );
+
+  const mailtoLink = `mailto:${CONFIG.SEND_TO}?subject=${subject}&body=${body}`;
+
+  // メールアプリを開く
+  window.location.href = mailtoLink;
+
+  // 履歴に保存
+  const history = loadHistory();
+  data._status = 'sent';
+  data._sentAt = new Date().toISOString();
+  history.unshift(data);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 60)));
+  clearDraft();
+  updateHomeState();
+
+  setTimeout(() => showScreen('scrComplete'), 500);
+}
+
+// ══════════════════════════════════════════
+// 履歴
+// ══════════════════════════════════════════
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; }
+}
+
+function renderHistory() {
+  const keyword = (document.getElementById('histSearch') || {}).value || '';
+  const list = loadHistory();
+  const filtered = keyword
+    ? list.filter(h => (h.datetime || '').includes(keyword) || (h._sentAt || '').includes(keyword))
+    : list;
+  const el = document.getElementById('historyList');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="hist-empty">📭 履歴がありません</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(h => {
+    const dt = h.datetime ? new Date(h.datetime).toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}) : '日付不明';
+    const badge = h._status === 'sent'
+      ? '<span class="hist-badge sent">送信済</span>'
+      : '<span class="hist-badge draft">下書き</span>';
+    const meta = [h.airCompressorUnit&&`圧縮機:${h.airCompressorUnit.replace(/;/g,'/')}`, h.steamBoilerUnit&&`蒸気:${h.steamBoilerUnit.replace(/;/g,'/')}`].filter(Boolean).join(' ');
+    return `<div class="hist-item">
+      <div style="flex:1">
+        <div class="hist-date">${dt}</div>
+        <div class="hist-meta">${meta||'—'}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// Toast
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════
+// 初期化
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // 今日の日付表示
+  const now = new Date();
+  document.getElementById('homeDate').textContent =
+    now.toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric', weekday:'long'});
+
+  updateHomeState();
+  updateHeader('scrHome');
+});
+</script>
+</body>
+</html>
