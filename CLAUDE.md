@@ -147,13 +147,13 @@ Power Automate が監視する Outlook アドレスを決める。
 | ヘッダー圧力（Mpa) | `headerPressure` |
 | 温水ポンプ運転号機 | `hwPumpUnit` |
 | 温水ポンプ圧力(Mpa) | `hwPumpPressure` |
-| 温水タンク容量(㎥） | `hwTankVol` |
+| 温水タンク(㎥） | `hwTankVol` |
 | 温水タンク内温度（℃） | `hwTankTemp` |
 | 中水タンク容量(㎥) | `greyWaterVol` |
 | 飲料水タンク容量（㎥） | `drinkWaterVol` |
 | PWタンク容量(㎥） | `pwTankVol` |
 | 市水温度（℃） | `cityWaterTemp` |
-| 灯油タンク容量TK６０５（㎥） | `tk605Vol` |
+| 灯油タンク容量（㎥） | `tk605Vol` |
 | 灯油メーター１（L) | `keroMeter1` |
 | 薬品タンク１（L) | `chemTank1` |
 | 灯油メーター2（L) | `keroMeter2` |
@@ -165,11 +165,11 @@ Power Automate が監視する Outlook アドレスを決める。
 | ドレン電導度 | `drainConductivity` |
 | ドレンポンプ圧力 | `drainPumpPressure` |
 | 総運転時間１ | `runTime1` |
-| 油面確認１ | `oilLevel1` |
-| 総運転時間2 | `runTime2` |
-| 油面確認2 | `oilLevel2` |
-| 総運転時間3 | `runTime3` |
-| 油面確認3 | `oilLevel3` |
+| 油面１ | `oilLevel1` |
+| 総運転時間２ | `runTime2` |
+| 油面２ | `oilLevel2` |
+| 総運転時間３ | `runTime3` |
+| 油面３ | `oilLevel3` |
 
 ### 2-7. アクション⑤「メールの送信」（任意・完了通知）
 | 設定 | 値 |
