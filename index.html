@@ -756,11 +756,14 @@ select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http
     <div class="confirm-row"><span class="confirm-val" id="hd_notes" style="text-align:left;max-width:100%">-</span></div>
   </div>
 
-  <div class="bottom-bar">
-    <button class="btn btn-secondary" onclick="showScreen('scrHistory')">← 戻る</button>
-    <button class="btn btn-full" id="btnDeleteEntry"
-      style="background:var(--red-light);color:var(--red);border:1.5px solid var(--red)"
-      onclick="deleteHistEntry()">🗑 削除</button>
+  <div class="bottom-bar" style="flex-direction:column;gap:8px">
+    <button class="btn btn-full" onclick="editFromHistory()" style="background:var(--navy);color:#fff">✏️ このデータを修正する</button>
+    <div style="display:flex;gap:10px;width:100%">
+      <button class="btn btn-secondary" onclick="showScreen('scrHistory')">← 戻る</button>
+      <button class="btn btn-full" id="btnDeleteEntry"
+        style="background:var(--red-light);color:var(--red);border:1.5px solid var(--red)"
+        onclick="deleteHistEntry()">🗑 削除</button>
+    </div>
   </div>
 </div>
 
@@ -1274,6 +1277,21 @@ function deleteHistEntry() {
   updateHomeState();
   showScreen('scrHistory');
   showToast('🗑 削除しました');
+}
+
+function editFromHistory() {
+  if (detailIndex < 0) return;
+  const history = loadHistory();
+  if (detailIndex >= history.length) return;
+  isEditing = true;
+  editingIndex = detailIndex;
+  clearDraft();
+  document.querySelectorAll('.form-input').forEach(el => el.value = '');
+  multiChips.ac = []; multiChips.hw = []; multiChips.sb = [];
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#chips_subTank [data-val="中"]').classList.add('active');
+  setFormData(history[detailIndex]);
+  showScreen('scrInput1');
 }
 
 // ══════════════════════════════════════════
