@@ -1146,9 +1146,9 @@ function submitReport() {
   const data = getFormData();
   const dateStr = data.datetime ? new Date(data.datetime).toLocaleString('ja-JP') : '日付不明';
 
-  // ① JSONをBase64エンコード（文字化け・翻訳対策）
+  // ① JSONをURLエンコード（base64はOutlookで行折り返しされるため変更）
   const jsonStr = JSON.stringify(data);
-  const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+  const encoded = encodeURIComponent(jsonStr);
 
   const subjectText = `${CONFIG.SUBJECT_PREFIX} ${dateStr}`;
   const subject = encodeURIComponent(subjectText);
