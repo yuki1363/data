@@ -52,35 +52,27 @@ Power Automate が監視する Outlook アドレスを決める。
 | 型 | 文字列 |
 | 値 | （空白） |
 
-### 2-4. アクション②「変数の設定」（JSON抽出）
-**アクション名:** `JSON本文を抽出`
+### 2-3b. フロー構成（推奨）
+変数ステップは不要。以下のシンプルな4ステップ構成を推奨：
+
+1. **新しいメールが届いたとき (V3)** — トリガー
+2. **Html からテキスト** — メール本文のHTMLタグを除去
+3. **作成** — Base64デコード（式: `base64ToString(trim(body('Html_からテキスト')))`）
+4. **JSON の解析** — 作成の出力をJSONとして解析
+5. **項目の作成** — SharePointへ保存
+
+> ⚠️ アプリ側でJSONをBase64エンコードして送信します。メール本文はBase64データのみ。件名に点検日時が含まれます（例: `ユーティリティ日報 2026/06/05 8:00:00`）。
+
+### 2-4. アクション「作成」
 | 設定 | 値 |
 |---|---|
-| 名前 | `jsonText` |
-| 値（式） | 以下の式を貼り付け |
+| 入力（式） | `base64ToString(trim(body('Html_からテキスト')))` |
 
-```
-base64ToString(
-  trim(substring(
-    replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''),
-    add(indexOf(replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''), 'JSONSTART'), 9),
-    sub(
-      indexOf(replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''), 'JSONEND'),
-      add(indexOf(replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''), 'JSONSTART'), 9)
-    )
-  ))
-)
-```
-
-> ⚠️ アプリ側でJSONをBase64エンコードして送信します。`base64ToString()` でデコードしてからJSONを解析してください。
-> ⚠️ マーカーは `JSONSTART` / `JSONEND`（9文字）。`add(..., 9)` はこの文字数分オフセットするための値。
-> ⚠️ `replace()` でHTMLタグ（`<br>`、`<br/>`）と `&nbsp;` を除去してからマーカーを検索します。
-
-### 2-5. アクション③「JSONの解析」
+### 2-5. アクション「JSONの解析」
 **アクション名:** `JSONを解析`
 | 設定 | 値 |
 |---|---|
-| コンテンツ | `変数 jsonText` |
+| コンテンツ | `作成` の出力（動的コンテンツ → 「作成」→「出力」） |
 | スキーマ | 以下のスキーマを貼り付け |
 
 ```json

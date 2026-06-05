@@ -1150,11 +1150,9 @@ function submitReport() {
   const jsonStr = JSON.stringify(data);
   const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
 
-  const subject = encodeURIComponent(CONFIG.SUBJECT_PREFIX);
-  const bodyText =
-    `点検日時: ${dateStr}\n\nJSONSTART\n` +
-    encoded +
-    `\nJSONEND`;
+  const subjectText = `${CONFIG.SUBJECT_PREFIX} ${dateStr}`;
+  const subject = encodeURIComponent(subjectText);
+  const bodyText = encoded;
   const body = encodeURIComponent(bodyText);
   document.getElementById('btnOutlookApp').href = `ms-outlook://compose?subject=${subject}&body=${body}`;
   document.getElementById('btnOutlookWeb').href = `https://outlook.office.com/mail/deeplink/compose?subject=${subject}&body=${body}`;
