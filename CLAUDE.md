@@ -62,18 +62,19 @@ Power Automate が監視する Outlook アドレスを決める。
 ```
 base64ToString(
   trim(substring(
-    body('新しいメールが届いたとき_(V3)')?['body'],
-    add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15),
+    replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''),
+    add(indexOf(replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''), 'JSONSTART'), 9),
     sub(
-      indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_END==='),
-      add(indexOf(body('新しいメールが届いたとき_(V3)')?['body'], '===JSON_START==='), 15)
+      indexOf(replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''), 'JSONEND'),
+      add(indexOf(replace(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '<br/>', ''), '&nbsp;', ''), 'JSONSTART'), 9)
     )
   ))
 )
 ```
 
 > ⚠️ アプリ側でJSONをBase64エンコードして送信します。`base64ToString()` でデコードしてからJSONを解析してください。
-> ⚠️ `===JSON_START===` は15文字。`add(..., 15)` はこの文字数分オフセットするための値。
+> ⚠️ マーカーは `JSONSTART` / `JSONEND`（9文字）。`add(..., 9)` はこの文字数分オフセットするための値。
+> ⚠️ `replace()` でHTMLタグ（`<br>`、`<br/>`）と `&nbsp;` を除去してからマーカーを検索します。
 
 ### 2-5. アクション③「JSONの解析」
 **アクション名:** `JSONを解析`
@@ -218,19 +219,7 @@ git push origin main
 | 数値列にエラー | 文字列→数値の型変換 | 式: `float(body('JSONを解析')?['headerPressure'])` |
 
 ### HTMLタグ混入対策（メール本文がHTML形式の場合）
-Outlookがメール本文をHTML形式で送信した場合、`<br>` や `&nbsp;` が混入することがある。
-変数設定の式を以下に変更：
-
-```
-trim(substring(
-  replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '),
-  add(indexOf(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '), '===JSON_START==='), 15),
-  sub(
-    indexOf(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '), '===JSON_END==='),
-    add(indexOf(replace(replace(body('新しいメールが届いたとき_(V3)')?['body'], '<br>', ''), '&nbsp;', ' '), '===JSON_START==='), 15)
-  )
-))
-```
+STEP 2-4 の式にすでに `replace()` によるタグ除去が含まれています。追加対応は不要です。
 
 ### 数値列の型変換（SharePoint数値型の場合）
 ```
